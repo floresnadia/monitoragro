@@ -7,875 +7,890 @@
 <meta name="description" content="Monitor mensual de precios, costos y relaciones insumo-producto del sector agropecuario de Entre Ríos.">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap');
 
 :root {
-  --verde:  #1a4d2e; --verde2: #2d6a4f; --verde3: #52b788; --verde4: #b7e4c7; --verde5: #e8f5ee;
-  --trigo:  #c9a84c; --trigo2: #f0c75e; --trigo3: #fff8e1;
-  --arroz:  #5a7fa0; --arroz2: #d0e8f5;
-  --rojo:   #b5302a; --rojo2:  #fde8e8;
-  --purp:   #6b3fa0; --purp2:  #ede0f7;
-  --gris:   #f4f1ec; --gris2:  #e4dfd5; --gris3: #ccc8c0;
-  --ink:    #1a1a18; --ink2:   #3a3a36; --ink3:  #7a7a72; --ink4: #b0aba0;
-  --white:  #fdfcf8;
-  --shadow: 0 2px 12px rgba(0,0,0,.08);
-}
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html { scroll-behavior:smooth; font-size:14px; }
-body { font-family:'DM Sans',sans-serif; background:var(--white); color:var(--ink); line-height:1.65; }
-
-/* ── HEADER ─────────────────────────────────────────────────────────────── */
-header {
-  background:var(--verde); color:#fff;
-  position:sticky; top:0; z-index:200;
-  box-shadow:0 2px 16px rgba(0,0,0,.3);
-}
-.header-inner { display:flex; align-items:center; justify-content:space-between; padding:0 20px; height:50px; max-width:1100px; margin:0 auto; }
-.logo { font-family:'DM Serif Display',serif; font-size:17px; white-space:nowrap; }
-.logo span { color:var(--trigo2); }
-nav { display:flex; gap:2px; overflow-x:auto; scrollbar-width:none; }
-nav::-webkit-scrollbar { display:none; }
-nav a { color:rgba(255,255,255,.7); text-decoration:none; font-size:11.5px; font-weight:500; padding:5px 9px; border-radius:4px; white-space:nowrap; transition:.2s; }
-nav a:hover { background:rgba(255,255,255,.15); color:#fff; }
-.api-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:#4CAF50; margin-right:4px; animation:pulse 2s infinite; }
-.api-dot.loading { background:var(--trigo2); }
-.api-dot.error { background:var(--rojo); animation:none; }
-@keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
-
-/* ── HERO ───────────────────────────────────────────────────────────────── */
-.hero {
-  background:linear-gradient(140deg, #0d2b18 0%, var(--verde) 55%, #1f5c3a 100%);
-  color:#fff; padding:44px 20px 36px; position:relative; overflow:hidden;
-}
-.hero::before {
-  content:''; position:absolute; inset:0; opacity:.04;
-  background-image:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0L40 20L20 40L0 20Z' fill='%23fff'/%3E%3C/svg%3E");
-  background-size:40px 40px;
-}
-.hero-inner { max-width:1100px; margin:0 auto; display:grid; grid-template-columns:1fr auto; gap:28px; align-items:end; }
-.hero-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(201,168,76,.2); border:1px solid rgba(201,168,76,.4); color:var(--trigo2); font-size:10px; font-weight:600; padding:3px 10px; border-radius:20px; margin-bottom:10px; letter-spacing:.07em; text-transform:uppercase; }
-.hero h1 { font-family:'DM Serif Display',serif; font-size:clamp(24px,4vw,36px); line-height:1.15; margin-bottom:8px; }
-.hero-desc { font-size:12.5px; opacity:.72; max-width:520px; }
-.hero-kpis { display:flex; flex-direction:column; gap:8px; min-width:155px; }
-.kpi { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12); border-radius:8px; padding:9px 13px; text-align:right; }
-.kpi-val { font-family:'DM Serif Display',serif; font-size:20px; color:var(--trigo2); line-height:1.1; }
-.kpi-lbl { font-size:9.5px; opacity:.6; text-transform:uppercase; letter-spacing:.06em; margin-top:2px; }
-
-/* ── TICKER ─────────────────────────────────────────────────────────────── */
-.ticker { background:var(--gris); border-bottom:1px solid var(--gris2); padding:10px 20px; overflow-x:auto; scrollbar-width:none; }
-.ticker::-webkit-scrollbar { display:none; }
-.ticker-inner { display:flex; gap:0; max-width:1100px; margin:0 auto; }
-.tick { display:flex; align-items:center; gap:7px; padding:5px 16px; border-right:1px solid var(--gris2); flex-shrink:0; font-size:12px; }
-.tick:first-child { padding-left:0; }
-.tick:last-child { border-right:none; }
-.tick-icon { font-size:17px; }
-.tick strong { display:block; font-size:12.5px; font-weight:600; }
-.up { color:var(--verde2); } .dn { color:var(--rojo); } .fl { color:var(--ink3); }
-
-/* ── LAYOUT ─────────────────────────────────────────────────────────────── */
-.wrap { max-width:1100px; margin:0 auto; }
-section { padding:32px 20px; border-bottom:1px solid var(--gris2); }
-section:nth-child(even) { background:var(--gris); }
-
-.sec-hdr { display:flex; align-items:baseline; gap:10px; margin-bottom:20px; }
-.sec-num { font-family:'DM Serif Display',serif; font-size:30px; color:var(--verde3); opacity:.45; line-height:1; }
-.sec-ttl { font-family:'DM Serif Display',serif; font-size:21px; }
-.sec-sub { font-size:11px; color:var(--ink3); margin-top:2px; }
-
-.g2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
-.g3 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
-.g4 { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
-
-/* ── CARDS ──────────────────────────────────────────────────────────────── */
-.card { background:var(--white); border:1px solid var(--gris2); border-radius:10px; padding:16px; }
-.card-ttl { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.07em; color:var(--ink3); margin-bottom:10px; }
-
-/* ── CONCLUSION BOX ─────────────────────────────────────────────────────── */
-.concl {
-  background:var(--verde5); border-left:3px solid var(--verde3);
-  border-radius:0 8px 8px 0; padding:11px 14px; margin-top:14px;
-  font-size:12px; color:var(--ink2); line-height:1.6;
-}
-.concl strong { color:var(--verde); }
-.concl.warn { background:var(--rojo2); border-color:var(--rojo); }
-.concl.warn strong { color:var(--rojo); }
-.concl.neutral { background:var(--trigo3); border-color:var(--trigo); }
-.concl.neutral strong { color:#7a6020; }
-
-/* ── TABLES ─────────────────────────────────────────────────────────────── */
-.tbl { width:100%; border-collapse:collapse; font-size:12.5px; }
-.tbl th { background:var(--verde); color:#fff; padding:8px 11px; text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
-.tbl td { padding:8px 11px; border-bottom:1px solid var(--gris2); vertical-align:middle; }
-.tbl tr:nth-child(even) td { background:var(--gris); }
-.tbl tr:hover td { background:var(--verde4); transition:.15s; }
-.tbl .big { font-family:'DM Serif Display',serif; font-size:16px; font-weight:400; }
-.tbl .total td { font-weight:700; background:var(--gris2) !important; }
-.bdg { display:inline-block; font-size:11px; font-weight:600; padding:2px 8px; border-radius:12px; }
-.bdg.up   { background:#d4edda; color:#155724; }
-.bdg.dn   { background:#f8d7da; color:#721c24; }
-.bdg.fl   { background:#e2e3e5; color:#383d41; }
-
-/* ── CHARTS ─────────────────────────────────────────────────────────────── */
-.ch-wrap { position:relative; }
-.ch-wrap.h200 { height:200px; }
-.ch-wrap.h240 { height:240px; }
-.ch-wrap.h180 { height:180px; }
-.ch-wrap.h160 { height:160px; }
-
-/* ── METRIC ROW ─────────────────────────────────────────────────────────── */
-.mrow { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
-.mcard { background:var(--gris); border-radius:8px; padding:11px 14px; flex:1; min-width:120px; text-align:center; }
-.mcard.green { background:var(--verde4); }
-.mcard.red   { background:var(--rojo2); }
-.mcard.gold  { background:var(--trigo3); }
-.mcard-lbl { font-size:9.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink3); }
-.mcard-val { font-family:'DM Serif Display',serif; font-size:22px; line-height:1.15; margin:2px 0; }
-.mcard-sub { font-size:10.5px; color:var(--ink3); }
-.mcard.green .mcard-sub { color:var(--verde2); }
-.mcard.red   .mcard-sub { color:var(--rojo); }
-
-/* ── FUENTE ─────────────────────────────────────────────────────────────── */
-.fuente { font-size:10px; color:var(--ink4); margin-top:7px; font-style:italic; }
-.fuente a { color:var(--verde2); text-decoration:none; }
-.fuente a:hover { text-decoration:underline; }
-
-/* ── PENDING ────────────────────────────────────────────────────────────── */
-.pending { color:var(--rojo); font-style:italic; font-weight:500; }
-.pending::before { content:'⚠ '; }
-
-/* ── METOD TABLE ────────────────────────────────────────────────────────── */
-.metod-tbl { width:100%; border-collapse:collapse; font-size:12px; }
-.metod-tbl tr { border-bottom:1px solid var(--gris2); }
-.metod-tbl tr:last-child { border-bottom:none; }
-.metod-tbl td { padding:10px 12px; vertical-align:top; }
-.metod-tbl td:first-child { font-weight:600; color:var(--ink2); width:180px; background:var(--gris); }
-.metod-tbl td:last-child { color:var(--ink3); line-height:1.7; }
-
-/* ── AUTOMATION BOX ─────────────────────────────────────────────────────── */
-.auto-box { background:#1a1a2e; color:#e0e0e8; border-radius:10px; padding:20px; font-size:12.5px; line-height:1.7; }
-.auto-box h4 { color:#a0c4ff; font-family:'DM Serif Display',serif; font-size:16px; margin-bottom:10px; }
-.auto-box code { background:rgba(255,255,255,.1); padding:1px 6px; border-radius:3px; font-size:11px; font-family:monospace; color:#7dd3fc; }
-.auto-box .ok   { color:#86efac; }
-.auto-box .warn { color:#fde68a; }
-.auto-box .step { margin:6px 0; padding-left:12px; border-left:2px solid #a0c4ff; }
-
-/* ── FOOTER ─────────────────────────────────────────────────────────────── */
-footer { background:var(--ink); color:rgba(255,255,255,.45); text-align:center; padding:18px 20px; font-size:10.5px; }
-footer strong { color:rgba(255,255,255,.75); }
-
-/* ── RESPONSIVE ─────────────────────────────────────────────────────────── */
-@media (max-width:720px) {
-  .g2,.g3,.g4 { grid-template-columns:1fr; }
-  .hero-inner  { grid-template-columns:1fr; }
-  .hero-kpis   { flex-direction:row; flex-wrap:wrap; }
-  .mrow        { gap:8px; }
+  --navy:   #0a0f1e;
+  --navy2:  #0f172a;
+  --navy3:  #1e293b;
+  --blue1:  #1d4ed8;
+  --blue2:  #2563eb;
+  --blue3:  #3b82f6;
+  --blue4:  #60a5fa;
+  --blue5:  #93c5fd;
+  --blue6:  #bfdbfe;
+  --blue7:  #dbeafe;
+  --blue8:  #eff6ff;
+  --cyan:   #06b6d4;
+  --teal:   #0d9488;
+  --red:    #ef4444;
+  --red2:   #fef2f2;
+  --amber:  #f59e0b;
+  --amber2: #fffbeb;
+  --green:  #10b981;
+  --green2: #ecfdf5;
+  --white:  #ffffff;
+  --gray1:  #f8fafc;
+  --gray2:  #f1f5f9;
+  --gray3:  #e2e8f0;
+  --gray4:  #cbd5e1;
+  --gray5:  #94a3b8;
+  --gray6:  #64748b;
+  --gray7:  #475569;
+  --ink:    #0f172a;
+  --ink2:   #1e293b;
+  --ink3:   #334155;
+  --ink4:   #64748b;
 }
 
-/* ── API STATUS BAR ─────────────────────────────────────────────────────── */
-#api-status { font-size:10px; text-align:right; color:rgba(255,255,255,.5); padding:2px 20px; background:rgba(0,0,0,.15); }
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;font-size:14px}
+body{font-family:'Inter',sans-serif;background:var(--gray1);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--gray2)}
+::-webkit-scrollbar-thumb{background:var(--blue3);border-radius:3px}
+
+/* ── HEADER ── */
+header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(10,15,30,.92);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(59,130,246,.2);
+}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:52px;max-width:1200px;margin:0 auto}
+.logo{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:#fff;letter-spacing:-.01em;white-space:nowrap}
+.logo span{color:var(--blue4)}
+.logo small{font-family:'Inter',sans-serif;font-size:10px;font-weight:400;color:rgba(255,255,255,.4);margin-left:8px;letter-spacing:.04em;text-transform:uppercase}
+nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav a{color:rgba(255,255,255,.5);text-decoration:none;font-size:11.5px;font-weight:500;padding:5px 10px;border-radius:6px;white-space:nowrap;transition:.18s;letter-spacing:.01em}
+nav a:hover{background:rgba(59,130,246,.15);color:var(--blue4)}
+
+/* ── HERO ── */
+.hero{
+  background:var(--navy);
+  background-image:radial-gradient(ellipse 80% 50% at 50% -10%, rgba(29,78,216,.4) 0%, transparent 70%),
+                   radial-gradient(ellipse 40% 30% at 80% 60%, rgba(6,182,212,.15) 0%, transparent 60%);
+  color:#fff;padding:56px 24px 48px;
+  position:relative;overflow:hidden;
+}
+.hero::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(59,130,246,.4),transparent);
+}
+.hero-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 280px;gap:40px;align-items:center}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3);color:var(--blue4);font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:20px;margin-bottom:14px;letter-spacing:.06em;text-transform:uppercase}
+.dot-live{width:6px;height:6px;border-radius:50%;background:#10b981;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(28px,4vw,42px);font-weight:800;line-height:1.1;letter-spacing:-.03em;margin-bottom:10px}
+.hero h1 em{font-style:normal;color:var(--blue4)}
+.hero-desc{font-size:13px;color:rgba(255,255,255,.55);max-width:500px;line-height:1.7}
+.hero-stats{display:flex;flex-direction:column;gap:10px}
+.hstat{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;padding:12px 16px;
+  display:flex;flex-direction:column;gap:2px;
+  transition:.2s;
+}
+.hstat:hover{background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.25)}
+.hstat-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--blue4)}
+.hstat-lbl{font-size:10px;color:rgba(255,255,255,.4);letter-spacing:.05em;text-transform:uppercase}
+
+/* ── TICKER ── */
+.ticker{background:var(--navy2);border-bottom:1px solid rgba(255,255,255,.06);overflow-x:auto;scrollbar-width:none}
+.ticker::-webkit-scrollbar{display:none}
+.ticker-inner{display:flex;max-width:1200px;margin:0 auto;padding:0 24px}
+.tick{display:flex;align-items:center;gap:8px;padding:10px 18px;border-right:1px solid rgba(255,255,255,.06);flex-shrink:0;font-size:11.5px;color:rgba(255,255,255,.5)}
+.tick:first-child{padding-left:0}
+.tick strong{color:#fff;font-weight:600}
+.up{color:#10b981}.dn{color:#ef4444}.fl{color:#94a3b8}
+
+/* ── SECTIONS ── */
+section{padding:40px 24px;border-bottom:1px solid var(--gray3)}
+section:nth-child(even){background:var(--white)}
+.wrap{max-width:1200px;margin:0 auto}
+
+.sec-hdr{display:flex;align-items:center;gap:14px;margin-bottom:24px}
+.sec-chip{background:var(--blue7);color:var(--blue1);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.sec-ttl{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.02em}
+.sec-sub{font-size:11.5px;color:var(--gray6);margin-top:2px}
+
+/* ── GRID ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+
+/* ── CARD ── */
+.card{background:var(--white);border:1px solid var(--gray3);border-radius:14px;padding:18px;transition:.2s}
+.card:hover{box-shadow:0 4px 24px rgba(59,130,246,.08);border-color:var(--blue6)}
+.card-ttl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--gray5);margin-bottom:12px}
+section:nth-child(even) .card{background:var(--gray1)}
+
+/* ── METRIC ── */
+.metric{background:var(--gray1);border:1px solid var(--gray3);border-radius:10px;padding:14px;text-align:center}
+.metric.blue{background:var(--blue8);border-color:var(--blue6)}
+.metric.green{background:var(--green2);border-color:#a7f3d0}
+.metric.red{background:var(--red2);border-color:#fecaca}
+.metric.amber{background:var(--amber2);border-color:#fde68a}
+.metric-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--gray5);margin-bottom:4px}
+.metric-val{font-family:'Syne',sans-serif;font-size:24px;font-weight:700;line-height:1.1;color:var(--ink)}
+.metric.blue .metric-val{color:var(--blue1)}
+.metric.green .metric-val{color:#065f46}
+.metric.red .metric-val{color:#991b1b}
+.metric-sub{font-size:11px;color:var(--gray5);margin-top:3px}
+.metric.green .metric-sub{color:#10b981}
+.metric.red .metric-sub{color:#ef4444}
+
+/* ── TABLE ── */
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{background:var(--navy2);color:rgba(255,255,255,.8);padding:9px 12px;text-align:left;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.tbl th:first-child{border-radius:8px 0 0 0}
+.tbl th:last-child{border-radius:0 8px 0 0}
+.tbl td{padding:9px 12px;border-bottom:1px solid var(--gray3);vertical-align:middle}
+.tbl tr:nth-child(even) td{background:var(--gray1)}
+.tbl tr:hover td{background:var(--blue8);transition:.12s}
+.tbl .total td{background:var(--blue8)!important;font-weight:700;color:var(--blue1)}
+.big{font-family:'Syne',sans-serif;font-size:15px;font-weight:700}
+
+/* ── BADGE ── */
+.bdg{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+.bdg.up{background:#d1fae5;color:#065f46}
+.bdg.dn{background:#fee2e2;color:#991b1b}
+.bdg.fl{background:var(--gray2);color:var(--gray6)}
+
+/* ── INSIGHT BOX ── */
+.insight{
+  border-radius:10px;padding:13px 16px;margin-top:14px;
+  font-size:12px;line-height:1.7;color:var(--ink3);
+  border-left:3px solid;
+}
+.insight.blue{background:var(--blue8);border-color:var(--blue3)}
+.insight.green{background:var(--green2);border-color:var(--green)}
+.insight.red{background:var(--red2);border-color:var(--red)}
+.insight.amber{background:var(--amber2);border-color:var(--amber)}
+.insight strong{font-weight:600}
+.insight.blue strong{color:var(--blue1)}
+.insight.green strong{color:#065f46}
+.insight.red strong{color:#991b1b}
+.insight.amber strong{color:#92400e}
+
+/* ── IP GRID ── */
+.ip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.ip-card{
+  background:var(--white);border:1px solid var(--gray3);border-radius:12px;
+  padding:16px;transition:.2s;position:relative;overflow:hidden;
+}
+.ip-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--blue3),var(--cyan));
+}
+.ip-card.bad::before{background:linear-gradient(90deg,var(--red),#f97316)}
+.ip-card.ok::before{background:linear-gradient(90deg,var(--green),var(--teal))}
+.ip-card:hover{box-shadow:0 8px 32px rgba(59,130,246,.12);border-color:var(--blue5);transform:translateY(-1px)}
+.ip-icon{font-size:22px;margin-bottom:8px}
+.ip-name{font-size:11px;font-weight:600;color:var(--gray6);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.ip-val{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--ink);line-height:1}
+.ip-unit{font-size:11px;color:var(--gray5);margin-top:2px}
+.ip-change{display:inline-flex;align-items:center;gap:3px;font-size:11.5px;font-weight:600;margin-top:8px;padding:3px 8px;border-radius:20px}
+.ip-change.bad{background:#fee2e2;color:#991b1b}
+.ip-change.ok{background:#d1fae5;color:#065f46}
+.ip-change.neutral{background:var(--gray2);color:var(--gray6)}
+.ip-interp{font-size:11px;color:var(--gray5);margin-top:6px;line-height:1.5}
+
+/* ── TOGGLE ── */
+.toggle-group{display:flex;gap:4px;background:var(--gray2);border-radius:8px;padding:3px;margin-bottom:16px;width:fit-content}
+.toggle-btn{padding:5px 14px;border-radius:6px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:.15s;background:transparent;color:var(--gray6)}
+.toggle-btn.active{background:var(--white);color:var(--blue1);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+
+/* ── CHART ── */
+.ch{position:relative}
+.ch.h200{height:200px}.ch.h220{height:220px}.ch.h240{height:240px}.ch.h180{height:180px}
+
+/* ── FUENTE ── */
+.fuente{font-size:10px;color:var(--gray4);margin-top:8px;font-style:italic}
+.fuente a{color:var(--blue3);text-decoration:none}
+
+/* ── RETENCIONES ── */
+.ret-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.ret-card{background:var(--white);border:1px solid var(--gray3);border-radius:10px;padding:14px}
+.ret-prod{font-size:13px;font-weight:600;margin-bottom:6px}
+.ret-pct{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;line-height:1}
+.ret-card.zero .ret-pct{color:var(--green)}
+.ret-card.low .ret-pct{color:var(--blue2)}
+.ret-card.mid .ret-pct{color:var(--amber)}
+.ret-card.high .ret-pct{color:var(--red)}
+.ret-norm{font-size:10px;color:var(--gray5);margin-top:4px}
+.ret-bar{height:4px;border-radius:2px;margin-top:8px;background:var(--gray3)}
+.ret-bar-fill{height:100%;border-radius:2px;background:var(--blue3);transition:.4s}
+.ret-card.zero .ret-bar-fill{background:var(--green)}
+.ret-card.low .ret-bar-fill{background:var(--blue3)}
+.ret-card.mid .ret-bar-fill{background:var(--amber)}
+.ret-card.high .ret-bar-fill{background:var(--red)}
+
+/* ── FOOTER ── */
+footer{background:var(--navy);color:rgba(255,255,255,.35);padding:24px;text-align:center;font-size:11px;line-height:1.8}
+footer strong{color:rgba(255,255,255,.65)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:760px){
+  .g2,.g3,.g4{grid-template-columns:1fr}
+  .hero-inner{grid-template-columns:1fr}
+  .hero-stats{flex-direction:row;flex-wrap:wrap}
+  .hstat{flex:1;min-width:120px}
+  .ip-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){
+  .ip-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
 
-<!-- ═══ HEADER ══════════════════════════════════════════════════════════════ -->
+<!-- HEADER -->
 <header>
-  <div id="api-status">Cargando datos en tiempo real…</div>
-  <div class="header-inner">
-    <div class="logo">Monitor Agropecuario <span>Entre Ríos</span></div>
+  <div class="hdr">
+    <div class="logo">Monitor Agropecuario <span>Entre Ríos</span> <small>N°1 · Abr 2026</small></div>
     <nav>
-      <a href="#granos">🌱 Granos</a>
-      <a href="#costos">💰 Costos</a>
-      <a href="#ip">📊 Insumo-Producto</a>
-      <a href="#bovinos">🐄 Bovinos</a>
-      <a href="#porcinos">🐷 Porcinos</a>
-      <a href="#aviar">🐔 Avícola</a>
-      <a href="#lacteo">🥛 Lácteo</a>
-      <a href="#retenciones">📋 DEX</a>
-      <a href="#metod">🔍 Metodología</a>
+      <a href="#granos">Granos</a>
+      <a href="#costos">Costos</a>
+      <a href="#ip">Insumo-Producto</a>
+      <a href="#bovinos">Bovinos</a>
+      <a href="#porcinos">Porcinos</a>
+      <a href="#aviar">Avícola</a>
+      <a href="#lacteo">Lácteo</a>
+      <a href="#dex">DEX</a>
+      <a href="#metod">Metodología</a>
     </nav>
   </div>
 </header>
 
-<!-- ═══ HERO ═════════════════════════════════════════════════════════════════ -->
+<!-- HERO -->
 <div class="hero">
   <div class="hero-inner wrap">
     <div>
-      <div class="hero-badge">📍 Campaña 2024/25 · Edición Nº 1 · Abril 2026</div>
-      <h1>Monitor Agropecuario<br>Entre Ríos</h1>
-      <p class="hero-desc">Análisis mensual de producción, precios, costos y relaciones insumo-producto de los principales complejos productivos provinciales. Elaborado con datos de SAGyP, BOLSACER, DGEC-ER, OCLA, SIO Carnes, Rosgan y Secretaría de Energía.</p>
+      <div class="hero-tag"><span class="dot-live"></span>Campaña 2024/25 · Edición Nº 1</div>
+      <h1>Monitor<br>Agropecuario<br><em>Entre Ríos</em></h1>
+      <p class="hero-desc">Análisis mensual de producción, precios, costos y relaciones insumo-producto de los principales complejos productivos provinciales. Datos de SAGyP, BOLSACER, OCLA, SIO Carnes, Rosgan y Sec. Energía.</p>
     </div>
-    <div class="hero-kpis">
-      <div class="kpi"><div class="kpi-val">8,3 M t</div><div class="kpi-lbl">Producción agrícola 24/25</div></div>
-      <div class="kpi"><div class="kpi-val">USD 2.533 M</div><div class="kpi-lbl">VBP FOB 2024/25</div></div>
-      <div class="kpi"><div class="kpi-val" id="kpi-fob-soja">USD 323/t</div><div class="kpi-lbl">FOB Soja <span id="kpi-fob-fecha">(mar-26)</span></div></div>
+    <div class="hero-stats">
+      <div class="hstat"><span class="hstat-val">8,3 Mt</span><span class="hstat-lbl">Producción agrícola 24/25</span></div>
+      <div class="hstat"><span class="hstat-val">USD 2.533M</span><span class="hstat-lbl">VBP FOB 2024/25</span></div>
+      <div class="hstat"><span class="hstat-val" id="kpi-soja">USD 323/t</span><span class="hstat-lbl">FOB Soja actual</span></div>
+      <div class="hstat"><span class="hstat-val">+5%</span><span class="hstat-lbl">Var. producción total</span></div>
     </div>
   </div>
 </div>
 
-<!-- ═══ TICKER ════════════════════════════════════════════════════════════════ -->
+<!-- TICKER -->
 <div class="ticker">
-  <div class="ticker-inner wrap">
-    <div class="tick"><span class="tick-icon">🌱</span><div><strong class="up">Soja +24%</strong><span>producción 24/25</span></div></div>
-    <div class="tick"><span class="tick-icon">🍚</span><div><strong class="up">Arroz 32%</strong><span>del total nacional</span></div></div>
-    <div class="tick"><span class="tick-icon">🌽</span><div><strong class="dn">Maíz −12%</strong><span>producción 24/25</span></div></div>
-    <div class="tick"><span class="tick-icon">🌾</span><div><strong class="up">Trigo +26%</strong><span>proyección 25/26</span></div></div>
-    <div class="tick"><span class="tick-icon">🐄</span><div><strong class="up">+74% export.</strong><span>carne bovina USD</span></div></div>
-    <div class="tick"><span class="tick-icon">🐔</span><div><strong class="fl">50% faena aviar</strong><span>nac. en ER</span></div></div>
-    <div class="tick"><span class="tick-icon">⛽</span><div><strong class="dn">Gasoil +41%</strong><span>interanual dic-25</span></div></div>
-    <div class="tick"><span class="tick-icon">🍚</span><div><strong class="dn">Arroz DEX 0%</strong><span>permanente · ventaja ER</span></div></div>
+  <div class="ticker-inner">
+    <div class="tick"><strong class="up">Soja +24%</strong>&nbsp;producción</div>
+    <div class="tick"><strong class="up">Arroz 32%</strong>&nbsp;del total nac.</div>
+    <div class="tick"><strong class="dn">Maíz −12%</strong>&nbsp;producción</div>
+    <div class="tick"><strong class="up">Trigo +26%</strong>&nbsp;proy. 25/26</div>
+    <div class="tick"><strong class="up">+74%</strong>&nbsp;export. bovina USD</div>
+    <div class="tick"><strong class="fl">50%</strong>&nbsp;faena aviar nac.</div>
+    <div class="tick"><strong class="dn">Gasoil +41%</strong>&nbsp;interanual dic-25</div>
+    <div class="tick"><strong class="up">Arroz DEX 0%</strong>&nbsp;permanente</div>
   </div>
 </div>
 
-<!-- ═══ 01 GRANOS ═════════════════════════════════════════════════════════════ -->
+<!-- 01 GRANOS -->
 <section id="granos">
-  <div class="wrap">
-    <div class="sec-hdr"><span class="sec-num">01</span><div><div class="sec-ttl">Producción y Precios de Granos</div><div class="sec-sub">Campaña 2024/25 · Fuente: SAGyP — Estimaciones Agrícolas · BCR · BOLSACER</div></div></div>
+<div class="wrap">
+  <div class="sec-hdr">
+    <span class="sec-chip">01</span>
+    <div><div class="sec-ttl">Producción y Precios de Granos</div><div class="sec-sub">Campaña 2024/25 · SAGyP · BCR · BOLSACER</div></div>
+  </div>
 
-    <!-- Tabla producción -->
-    <div class="card" style="overflow-x:auto; margin-bottom:18px">
-      <div class="card-ttl">Producción Agrícola Entre Ríos — Campaña 2024/25</div>
-      <table class="tbl">
-        <thead><tr><th>Cultivo</th><th>Producción (t)</th><th>Var. a/a</th><th>Part. nacional</th><th>Rinde (kg/ha)</th><th>Var. rinde</th><th>VBP (USD M)</th></tr></thead>
-        <tbody>
-          <tr><td>🍚 Arroz (var. Uru5)</td><td>524.948</td><td><span class="bdg up">+7%</span></td><td>32%</td><td class="big">7.786</td><td><span class="bdg up">+15%</span></td><td>215</td></tr>
-          <tr><td>🌽 Maíz</td><td>2.254.760</td><td><span class="bdg dn">−12%</span></td><td>4%</td><td class="big">6.603</td><td><span class="bdg up">+15%</span></td><td>498</td></tr>
-          <tr><td>🌾 Trigo</td><td>2.217.630</td><td><span class="bdg fl">+0,3%</span></td><td>12%</td><td class="big">3.207</td><td><span class="bdg dn">−5%</span></td><td>514</td></tr>
-          <tr><td>🌱 Soja</td><td>3.372.215</td><td><span class="bdg up">+24%</span></td><td>7%</td><td class="big">2.695</td><td><span class="bdg up">+8%</span></td><td>1.305</td></tr>
-          <tr class="total"><td>TOTAL</td><td>8.369.553</td><td><span class="bdg up">+5%</span></td><td>—</td><td>—</td><td>—</td><td><strong>2.533</strong></td></tr>
-        </tbody>
-      </table>
-      <div class="fuente">Fuente: SAGyP — Estimaciones Agrícolas. VBP = Producción × Precio FOB 2025 (USD).</div>
-      <div class="concl">
-        <strong>Conclusión:</strong> La campaña 2024/25 muestra una dinámica dual. La <strong>soja lidera el crecimiento</strong> (+24% volumen, +8% rinde) y explica el 52% del VBP provincial. El <strong>arroz</strong> mantiene su ventaja competitiva — concentra el 32% de la producción nacional con el mejor rinde histórico de 7.786 kg/ha. El <strong>maíz retrocede</strong> en producción (−12%) pero mejora su rendimiento (+15%), señal de que la caída se explica por menor área sembrada, no por problemas productivos. El <strong>trigo</strong> se mantiene estable en volumen con proyección de récord para 25/26.
-      </div>
+  <div class="card" style="overflow-x:auto;margin-bottom:18px">
+    <div class="card-ttl">Producción Agrícola — Campaña 2024/25</div>
+    <table class="tbl">
+      <thead><tr><th>Cultivo</th><th>Producción (t)</th><th>Var. a/a</th><th>Part. nac.</th><th>Rinde (kg/ha)</th><th>Var. rinde</th><th>VBP (USD M)</th></tr></thead>
+      <tbody>
+        <tr><td>🍚 Arroz — var. Uru5</td><td>524.948</td><td><span class="bdg up">+7%</span></td><td>32%</td><td class="big">7.786</td><td><span class="bdg up">+15%</span></td><td>215</td></tr>
+        <tr><td>🌽 Maíz</td><td>2.254.760</td><td><span class="bdg dn">−12%</span></td><td>4%</td><td class="big">6.603</td><td><span class="bdg up">+15%</span></td><td>498</td></tr>
+        <tr><td>🌾 Trigo</td><td>2.217.630</td><td><span class="bdg fl">+0,3%</span></td><td>12%</td><td class="big">3.207</td><td><span class="bdg dn">−5%</span></td><td>514</td></tr>
+        <tr><td>🌱 Soja</td><td>3.372.215</td><td><span class="bdg up">+24%</span></td><td>7%</td><td class="big">2.695</td><td><span class="bdg up">+8%</span></td><td>1.305</td></tr>
+        <tr class="total"><td>TOTAL</td><td>8.369.553</td><td><span class="bdg up">+5%</span></td><td>—</td><td>—</td><td>—</td><td>2.533</td></tr>
+      </tbody>
+    </table>
+    <div class="fuente">Fuente: SAGyP — Estimaciones Agrícolas. VBP = Producción × FOB 2025 (USD).</div>
+    <div class="insight blue"><strong>Lectura:</strong> Campaña de comportamientos divergentes. La soja lidera con +24% en volumen y +8% en rinde, consolidándose como el cultivo de mayor VBP provincial (52% del total). El arroz Uru5 logra rinde récord de 7.786 kg/ha (+15%) y mantiene la ventaja del DEX 0% permanente. El maíz retrocede en área pero mejora su rinde, lo que revela una decisión de reasignación de tierras más que un problema productivo. El trigo proyecta récord para 25/26 (+26%).</div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-ttl">Evolución FOB USD/t — 2018–2025 <span id="fob-status" style="font-weight:400;color:var(--gray4)">(datos base)</span></div>
+      <div class="ch h240"><canvas id="chartFOB"></canvas></div>
+      <div class="fuente">Soja (mayo), Trigo/Maíz (enero): BCR. Arroz Uru5 (marzo): SAGyP. Segundo miércoles hábil. <span id="fob-date"></span></div>
+      <div class="insight blue"><strong>2025 en perspectiva:</strong> El contexto es de precios moderados. La soja recupera +16% interanual gracias a stocks globales ajustados. Trigo (−10%) y maíz (−3%) acusan cosechas récord en el hemisferio norte. El arroz Uru5 rebota +13% desde el piso de 2024, aunque lejos del máximo de USD 610/t de 2023.</div>
     </div>
-
-    <!-- Gráficos FOB -->
-    <div class="g2">
-      <div class="card">
-        <div class="card-ttl">Evolución Precios FOB USD/t — 2018–2025 <span id="fob-api-badge" style="font-size:9px;color:var(--ink4)">(cargando datos oficiales…)</span></div>
-        <div class="ch-wrap h240"><canvas id="chartFOB"></canvas></div>
-        <div class="fuente">Soja (mayo) y Trigo/Maíz (enero): BCR. Arroz Uru5 (marzo): SAGyP. Segundo miércoles hábil. <span id="fob-update-note"></span></div>
-        <div class="concl neutral">
-          <strong>Lectura 2025:</strong> La soja recupera terreno (+16% interanual) impulsada por stocks globales ajustados, mientras el trigo (−10%) y el maíz (−3%) acusan la presión de cosechas récord en el hemisferio norte. El arroz Uru5 repunta (+13%) desde el piso de 2024 pero se mantiene lejos del pico de USD 610/t de 2023. <strong>Para el productor entreriano, esto implica que la soja vuelve a ser el cultivo con mejor ecuación precio/riesgo</strong>, situación que ya se refleja en la expansión de área proyectada para 25/26.
+    <div class="card">
+      <div class="card-ttl">Variación interanual FOB — 2025 vs 2024</div>
+      <div class="g2" style="gap:10px;margin-bottom:14px">
+        <div style="background:var(--green2);border-radius:10px;padding:16px;text-align:center;border:1px solid #a7f3d0">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#065f46;font-weight:600">🌱 Soja</div>
+          <div style="font-family:'Syne',sans-serif;font-size:34px;font-weight:800;color:#065f46">+16%</div>
+          <div style="font-size:11px;color:#10b981">USD 323/t · mar-26</div>
+        </div>
+        <div style="background:var(--red2);border-radius:10px;padding:16px;text-align:center;border:1px solid #fecaca">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#991b1b;font-weight:600">🌾 Trigo</div>
+          <div style="font-family:'Syne',sans-serif;font-size:34px;font-weight:800;color:#991b1b">−10%</div>
+          <div style="font-size:11px;color:#ef4444">USD 218/t · ene-26</div>
+        </div>
+        <div style="background:var(--red2);border-radius:10px;padding:16px;text-align:center;border:1px solid #fecaca">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#991b1b;font-weight:600">🌽 Maíz</div>
+          <div style="font-family:'Syne',sans-serif;font-size:34px;font-weight:800;color:#991b1b">−3%</div>
+          <div style="font-size:11px;color:#ef4444">USD 185/t · ene-26</div>
+        </div>
+        <div style="background:var(--green2);border-radius:10px;padding:16px;text-align:center;border:1px solid #a7f3d0">
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#065f46;font-weight:600">🍚 Arroz Uru5</div>
+          <div style="font-family:'Syne',sans-serif;font-size:34px;font-weight:800;color:#065f46">+13%</div>
+          <div style="font-size:11px;color:#10b981">~USD 420/t · mar-26</div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-ttl">Variación interanual FOB — 2025 vs 2024</div>
-        <div class="g2" style="gap:10px; margin-bottom:14px">
-          <div style="background:var(--verde5);border-radius:8px;padding:14px;text-align:center">
-            <div style="font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--verde)">🌱 Soja</div>
-            <div style="font-family:'DM Serif Display',serif;font-size:30px;color:var(--verde)">+16%</div>
-            <div style="font-size:11px;color:var(--ink3)">USD 323/t (mar-26)</div>
-          </div>
-          <div style="background:var(--rojo2);border-radius:8px;padding:14px;text-align:center">
-            <div style="font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--rojo)">🌾 Trigo</div>
-            <div style="font-family:'DM Serif Display',serif;font-size:30px;color:var(--rojo)">−10%</div>
-            <div style="font-size:11px;color:var(--ink3)">USD 218/t (ene-26)</div>
-          </div>
-          <div style="background:var(--rojo2);border-radius:8px;padding:14px;text-align:center">
-            <div style="font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--rojo)">🌽 Maíz</div>
-            <div style="font-family:'DM Serif Display',serif;font-size:30px;color:var(--rojo)">−3%</div>
-            <div style="font-size:11px;color:var(--ink3)">USD 185/t (ene-26)</div>
-          </div>
-          <div style="background:var(--verde5);border-radius:8px;padding:14px;text-align:center">
-            <div style="font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--verde)">🍚 Arroz Uru5</div>
-            <div style="font-family:'DM Serif Display',serif;font-size:30px;color:var(--verde)">+13%</div>
-            <div style="font-size:11px;color:var(--ink3)">~USD 420/t (mar-26)</div>
-          </div>
-        </div>
-        <div class="concl">
-          <strong>Contexto global 2026:</strong> El USDA proyecta stocks finales de maíz en 290,9 Mt (+3,6%) y de soja en 124,4 Mt con sesgo bajista moderado. La sequía en el cinturón triguero de EE.UU. sostiene el precio del trigo. Para Argentina, la cosecha 2025/26 proyectada en 48 Mt de soja y récord de maíz pressiona la oferta local. <strong>El arroz entreriano tiene la ventaja adicional del DEX 0% permanente</strong>, que mejora su ecuación respecto a los granos que pagan entre 7,5% y 24%.
-        </div>
-      </div>
+      <div class="insight amber"><strong>Ventaja ER — Arroz:</strong> El DEX 0% permanente sobre el arroz (D°38/2025) implica que el productor entreriano recibe el precio FAS íntegro, mientras que soja (24%), maíz (8,5%) y trigo (7,5%) ceden parte al Estado. Esta asimetría convierte al arroz en el cultivo de mejor ecuación fiscal en la provincia.</div>
     </div>
   </div>
+</div>
 </section>
 
-<!-- ═══ 02 COSTOS ══════════════════════════════════════════════════════════════ -->
+<!-- 02 COSTOS -->
 <section id="costos">
-  <div class="wrap">
-    <div class="sec-hdr"><span class="sec-num">02</span><div><div class="sec-ttl">Estructura de Costos por Hectárea</div><div class="sec-sub">Campaña 2024/25 · Fuente: BOLSACER — red de colaboradores · Ciudad de Paraná</div></div></div>
-
-    <div class="g3" style="margin-bottom:18px">
-      <div class="card">
-        <div class="card-ttl">🌾 Trigo — costo/ha</div>
-        <div class="ch-wrap h180"><canvas id="cTrigo"></canvas></div>
-        <div style="margin-top:8px;font-size:11.5px;color:var(--ink2)">Insumos <strong>44%</strong> · Labores <strong>12%</strong> · Flete <strong>18%</strong></div>
-        <div class="fuente">Fuente: BOLSACER.</div>
-      </div>
-      <div class="card">
-        <div class="card-ttl">🌽 Maíz de primera — costo/ha</div>
-        <div class="ch-wrap h180"><canvas id="cMaiz"></canvas></div>
-        <div style="margin-top:8px;font-size:11.5px;color:var(--ink2)">Labores <strong>43%</strong> · Insumos <strong>35%</strong> · Flete <strong>8%</strong></div>
-        <div class="fuente">Fuente: BOLSACER.</div>
-      </div>
-      <div class="card">
-        <div class="card-ttl">🌱 Soja de primera — costo/ha</div>
-        <div class="ch-wrap h180"><canvas id="cSoja"></canvas></div>
-        <div style="margin-top:8px;font-size:11.5px;color:var(--ink2)">Insumos <strong>35%</strong> · Labores <strong>12%</strong> · Flete <strong>22%</strong></div>
-        <div class="fuente">Fuente: BOLSACER.</div>
-      </div>
+<div class="wrap">
+  <div class="sec-hdr">
+    <span class="sec-chip">02</span>
+    <div><div class="sec-ttl">Estructura de Costos por Hectárea</div><div class="sec-sub">Campaña 2024/25 · BOLSACER · Ciudad de Paraná</div></div>
+  </div>
+  <div class="g3" style="margin-bottom:16px">
+    <div class="card">
+      <div class="card-ttl">🌾 Trigo — composición del costo</div>
+      <div class="ch h180"><canvas id="cTrigo"></canvas></div>
+      <div style="font-size:11.5px;color:var(--ink3);margin-top:8px">Insumos <strong>44%</strong> · Labores <strong>12%</strong> · Flete <strong>18%</strong></div>
     </div>
-
-    <div class="g2">
-      <div class="card">
-        <div class="card-ttl">Costo laboral — Empleado Rural (CNTA)</div>
-        <div class="mrow">
-          <div class="mcard red"><div class="mcard-lbl">Salario dic-25</div><div class="mcard-val">$978.908</div><div class="mcard-sub">+35% interanual</div></div>
-          <div class="mcard"><div class="mcard-lbl">Peso labores en maíz</div><div class="mcard-val">43%</div><div class="mcard-sub">del costo total/ha</div></div>
-          <div class="mcard"><div class="mcard-lbl">Peso labores en soja/trigo</div><div class="mcard-val">12%</div><div class="mcard-sub">del costo total/ha</div></div>
-        </div>
-        <div class="fuente">Fuente: Comisión Nacional de Trabajo Agrario (CNTA).</div>
-      </div>
-      <div class="concl" style="margin:0;align-self:start">
-        <strong>Análisis de estructura:</strong> Las diferencias de estructura de costos son clave para entender la toma de decisiones del productor.<br><br>
-        El <strong>maíz</strong> es el más sensible al costo laboral (43% del total), lo que explica en parte la caída de área sembrada ante la suba salarial del 35% en 2025.<br><br>
-        La <strong>soja y el trigo</strong> están dominados por insumos (semillas, fitosanitarios, fertilizantes) que se cotizan en dólares. Con el tipo de cambio estabilizado en bandas, este componente resulta menos volátil que en años anteriores.<br><br>
-        El <strong>flete</strong> representa una proporción significativa especialmente en soja (22%), dada la distancia a los puertos del Gran Rosario. Este diferencial de <strong>~USD 22/t Paraná y USD 28/t Concordia</strong> es el principal factor que diferencia al productor entreriano del santafesino respecto a la pizarra.
-      </div>
+    <div class="card">
+      <div class="card-ttl">🌽 Maíz de primera — composición del costo</div>
+      <div class="ch h180"><canvas id="cMaiz"></canvas></div>
+      <div style="font-size:11.5px;color:var(--ink3);margin-top:8px">Labores <strong>43%</strong> · Insumos <strong>35%</strong> · Flete <strong>8%</strong></div>
+    </div>
+    <div class="card">
+      <div class="card-ttl">🌱 Soja de primera — composición del costo</div>
+      <div class="ch h180"><canvas id="cSoja"></canvas></div>
+      <div style="font-size:11.5px;color:var(--ink3);margin-top:8px">Insumos <strong>35%</strong> · Labores <strong>12%</strong> · Flete <strong>22%</strong></div>
     </div>
   </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-ttl">Costo laboral — Empleado Rural (CNTA)</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <div class="metric red" style="flex:1"><div class="metric-lbl">Salario dic-25</div><div class="metric-val">$978.908</div><div class="metric-sub">+35% interanual</div></div>
+        <div class="metric" style="flex:1"><div class="metric-lbl">Peso en maíz</div><div class="metric-val">43%</div><div class="metric-sub">del costo total/ha</div></div>
+        <div class="metric" style="flex:1"><div class="metric-lbl">Peso en soja/trigo</div><div class="metric-val">12%</div><div class="metric-sub">del costo total/ha</div></div>
+      </div>
+    </div>
+    <div class="insight blue" style="margin:0;align-self:stretch;display:flex;flex-direction:column;justify-content:center">
+      <strong>Diferencias clave entre cultivos:</strong><br><br>
+      El <strong>maíz</strong> es el más vulnerable al costo laboral (43% del total), lo que explica la caída de área sembrada ante la suba salarial del 35%. La <strong>soja y el trigo</strong> están dominados por insumos dolarizados — más estables con el tipo de cambio en bandas. El <strong>flete</strong> es el diferencial crítico de ER: representa hasta el 22% del costo en soja, y el diferencial con Rosario (~USD 22/t Paraná, ~USD 28/t Concordia) define la competitividad regional.
+    </div>
+  </div>
+</div>
 </section>
 
-<!-- ═══ 03 INSUMO-PRODUCTO ═════════════════════════════════════════════════════ -->
+<!-- 03 INSUMO-PRODUCTO -->
 <section id="ip">
-  <div class="wrap">
-    <div class="sec-hdr"><span class="sec-num">03</span><div><div class="sec-ttl">Relaciones Insumo-Producto</div><div class="sec-sub">Paraná, Entre Ríos · <strong>kg de grano necesarios para comprar 1 litro de gasoil</strong> · Más kg = peor para el productor</div></div></div>
+<div class="wrap">
+  <div class="sec-hdr">
+    <span class="sec-chip">03</span>
+    <div><div class="sec-ttl">Relaciones Insumo-Producto</div><div class="sec-sub">Paraná, Entre Ríos · Diciembre 2025 · <strong>Más kg = peor para el productor</strong></div></div>
+  </div>
 
-    <div class="g2">
-      <div>
-        <div class="card" style="margin-bottom:16px;overflow-x:auto">
-          <div class="card-ttl">Gasoil G2 Paraná / Granos — diciembre de cada año</div>
-          <table class="tbl">
-            <thead><tr><th>Relación</th><th>Dic-22</th><th>Dic-23</th><th>Dic-24</th><th>Dic-25</th><th>Var. a/a</th></tr></thead>
-            <tbody>
-              <tr><td>⛽ / 🌱 G2 / Soja</td><td>1,5</td><td>1,9</td><td>2,7</td><td class="big">3,2</td><td><span class="bdg dn">+18%</span></td></tr>
-              <tr><td>⛽ / 🍚 G2 / Arroz Uru5</td><td>2,1</td><td>1,0</td><td>1,6</td><td class="big">3,0</td><td><span class="bdg dn">+83%</span></td></tr>
-              <tr><td>⛽ / 🌽 G2 / Maíz</td><td>3,8</td><td>4,2</td><td>5,8</td><td class="big">5,6</td><td><span class="bdg up">−3%</span></td></tr>
-              <tr><td>⛽ / 🌾 G2 / Trigo</td><td>3,2</td><td>4,0</td><td>4,9</td><td class="big">5,3</td><td><span class="bdg dn">+8%</span></td></tr>
-            </tbody>
-          </table>
-          <div class="fuente">Gasoil G2 Paraná: Secretaría de Energía (<a href="http://res1104.se.gob.ar/consultaprecios.eess.php" target="_blank">res1104.se.gob.ar</a>). Pizarra granos: BCR/BOLSACER.</div>
+  <!-- Subtítulo G2/G3 toggle -->
+  <div style="margin-bottom:20px">
+    <div class="toggle-group">
+      <button class="toggle-btn active" onclick="showG('g2',this)">Gasoil G2 (común)</button>
+      <button class="toggle-btn" onclick="showG('g3',this)">Gasoil G3 (premium/agro)</button>
+    </div>
+
+    <!-- G2 -->
+    <div id="panel-g2">
+      <div class="ip-grid">
+        <div class="ip-card bad">
+          <div class="ip-icon">⛽🌱</div>
+          <div class="ip-name">G2 / Soja</div>
+          <div class="ip-val">3,2</div>
+          <div class="ip-unit">kg soja por litro G2</div>
+          <div class="ip-change bad">▲ +18% vs dic-24</div>
+          <div class="ip-interp">Hace un año se necesitaban 2,7 kg. Deterioro sostenido desde 2022.</div>
         </div>
-
-        <div class="card" style="overflow-x:auto">
-          <div class="card-ttl">Carnes y Leche / Maíz — kg de maíz por kg de producto</div>
-          <table class="tbl">
-            <thead><tr><th>Relación</th><th>2023</th><th>2024</th><th>2025</th><th>Tendencia</th></tr></thead>
-            <tbody>
-              <tr><td>🐄 Novillito / Maíz</td><td>~4,5</td><td>~8,5</td><td class="big">~16,0</td><td><span class="bdg dn">Sube</span></td></tr>
-              <tr><td>🐷 Capón / Maíz</td><td>~3,0</td><td>~5,5</td><td class="big">~7,7</td><td><span class="bdg dn">Sube</span></td></tr>
-              <tr><td>🐔 Pollo / Maíz (nov-25)</td><td>—</td><td>~11,4</td><td class="big">~8,0</td><td><span class="bdg up">Mejora</span></td></tr>
-              <tr><td>🥚 Huevo / Maíz (dic-25)</td><td>—</td><td>~8,8</td><td class="big">~6,6</td><td><span class="bdg up">Mejora</span></td></tr>
-            </tbody>
-          </table>
-          <div class="fuente">Maíz: pizarra BCR. Novillito: Rosgan. Capón: SIO Carnes. Pollo/Huevo: SAGyP.</div>
+        <div class="ip-card bad" style="--c:var(--red)">
+          <div class="ip-icon">⛽🍚</div>
+          <div class="ip-name">G2 / Arroz Uru5</div>
+          <div class="ip-val">3,0</div>
+          <div class="ip-unit">kg arroz por litro G2</div>
+          <div class="ip-change bad">▲ +83% vs dic-24</div>
+          <div class="ip-interp">El peor deterioro del año. En dic-24 era 1,6 kg. El precio del arroz cayó a la mitad y el gasoil subió 41%.</div>
+        </div>
+        <div class="ip-card ok">
+          <div class="ip-icon">⛽🌽</div>
+          <div class="ip-name">G2 / Maíz</div>
+          <div class="ip-val">5,6</div>
+          <div class="ip-unit">kg maíz por litro G2</div>
+          <div class="ip-change ok">▼ −3% vs dic-24</div>
+          <div class="ip-interp">Único grano que mejoró. La pizarra del maíz resistió mejor que el combustible. Aún 35% por encima del promedio 2018-2021.</div>
+        </div>
+        <div class="ip-card bad">
+          <div class="ip-icon">⛽🌾</div>
+          <div class="ip-name">G2 / Trigo</div>
+          <div class="ip-val">5,3</div>
+          <div class="ip-unit">kg trigo por litro G2</div>
+          <div class="ip-change bad">▲ +8% vs dic-24</div>
+          <div class="ip-interp">La caída de precio del trigo (-10% a/a) sumada al gasoil más caro deteriora la ecuación del cereal invernal.</div>
         </div>
       </div>
+    </div>
 
-      <div class="card">
-        <div class="card-ttl">Evolución Gasoil G2 / Granos — kg grano por litro</div>
-        <div class="ch-wrap h240"><canvas id="chartIP"></canvas></div>
-        <div class="concl warn" style="margin-top:12px">
-          <strong>Caso crítico — Arroz Uru5:</strong> La combinación de caída del precio del arroz y suba del gasoil (+41% interanual en dic-25) <strong>triplicó la relación</strong> en un año: de 1,6 a 3,0 kg/litro. Cada litro de gasoil ahora cuesta el equivalente a 3 kg de arroz contra 1,6 en dic-24. Esto explica la contracción del área sembrada 2025/26 (−13% proyectado por BOLSACER) especialmente en zonas con riego por pozo profundo, donde el gasoil es el insumo más importante.
+    <!-- G3 -->
+    <div id="panel-g3" style="display:none">
+      <div class="ip-grid">
+        <div class="ip-card bad">
+          <div class="ip-icon">⛽🌱</div>
+          <div class="ip-name">G3 / Soja</div>
+          <div class="ip-val">3,7</div>
+          <div class="ip-unit">kg soja por litro G3</div>
+          <div class="ip-change bad">▲ +21% vs dic-24</div>
+          <div class="ip-interp">Tractores y cosechadoras usan G3 premium. La relación es ~16% peor que con G2.</div>
         </div>
-        <div class="concl" style="margin-top:8px">
-          <strong>Maíz: la excepción positiva.</strong> Es el único grano que mejoró su relación con el gasoil (−3%), gracias a que la pizarra del cereal se mantuvo más firme que el combustible. Sin embargo, el nivel de 5,6 kg/litro sigue <strong>35% por encima del promedio histórico 2018-2021</strong> (~4,1 kg/litro), lo que indica que la relación aún está deteriorada en perspectiva histórica.
+        <div class="ip-card bad">
+          <div class="ip-icon">⛽🍚</div>
+          <div class="ip-name">G3 / Arroz Uru5</div>
+          <div class="ip-val">3,5</div>
+          <div class="ip-unit">kg arroz por litro G3</div>
+          <div class="ip-change bad">▲ +92% vs dic-24</div>
+          <div class="ip-interp">Crítico para el arroz, cuya producción depende fuertemente del gasoil para el riego. El peor indicador del monitor.</div>
         </div>
-        <div class="fuente">Fuente: Sec. Energía para gasoil Paraná; BCR/BOLSACER para pizarra de granos.</div>
+        <div class="ip-card ok">
+          <div class="ip-icon">⛽🌽</div>
+          <div class="ip-name">G3 / Maíz</div>
+          <div class="ip-val">6,5</div>
+          <div class="ip-unit">kg maíz por litro G3</div>
+          <div class="ip-change ok">▼ −1% vs dic-24</div>
+          <div class="ip-interp">Sigue siendo la mejor relación combustible/cereal. Referencia de CONINAGRO (6,5 kg/L en feb-25).</div>
+        </div>
+        <div class="ip-card bad">
+          <div class="ip-icon">⛽🌾</div>
+          <div class="ip-name">G3 / Trigo</div>
+          <div class="ip-val">6,2</div>
+          <div class="ip-unit">kg trigo por litro G3</div>
+          <div class="ip-change bad">▲ +10% vs dic-24</div>
+          <div class="ip-interp">Coincide con el valor de FCECO-UNER/BOLSACER para dic-25. Nivel históricamente elevado.</div>
+        </div>
       </div>
     </div>
   </div>
+
+  <!-- Carnes y Leche / Maíz -->
+  <div style="margin-bottom:12px">
+    <div style="font-size:12px;font-weight:600;color:var(--gray6);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Carnes, Leche y Huevo / Maíz — kg de maíz por kg de producto (o docena)</div>
+    <div class="ip-grid">
+      <div class="ip-card bad">
+        <div class="ip-icon">🐄</div>
+        <div class="ip-name">Novillito / Maíz</div>
+        <div class="ip-val">16,0</div>
+        <div class="ip-unit">kg maíz por kg novillito</div>
+        <div class="ip-change bad">▲ +88% vs 2023</div>
+        <div class="ip-interp">La valorización del novillito fue tan fuerte que el maíz se volvió relativamente "barato" para el engorde. Feedlots con margen ajustado.</div>
+      </div>
+      <div class="ip-card bad">
+        <div class="ip-icon">🐄</div>
+        <div class="ip-name">Ternero / Maíz</div>
+        <div class="ip-val">17,4</div>
+        <div class="ip-unit">kg maíz por kg ternero</div>
+        <div class="ip-change bad">▲ +143% vs 2023</div>
+        <div class="ip-interp">El ternero superó al novillito en términos de maíz requerido, reflejando la retención de vientres y escasez relativa de reposición.</div>
+      </div>
+      <div class="ip-card bad">
+        <div class="ip-icon">🐷</div>
+        <div class="ip-name">Capón / Maíz</div>
+        <div class="ip-val">7,7</div>
+        <div class="ip-unit">kg maíz por kg capón</div>
+        <div class="ip-change neutral">▼ mejora vs jul-25</div>
+        <div class="ip-interp">El maíz representa ~70% del costo de alimentación porcina. La relación 7,7 es el mejor nivel de 2025 (pico fue ~9 en julio).</div>
+      </div>
+      <div class="ip-card ok">
+        <div class="ip-icon">🐔</div>
+        <div class="ip-name">Pollo / Maíz</div>
+        <div class="ip-val">8,0</div>
+        <div class="ip-unit">kg maíz por kg pollo (nov-25)</div>
+        <div class="ip-change ok">▼ −30% vs nov-24</div>
+        <div class="ip-interp">Mejora notable. Hace un año se necesitaban 11,4 kg. El precio del maíz creció menos que el del pollo, favoreciendo al integrador avícola.</div>
+      </div>
+      <div class="ip-card ok">
+        <div class="ip-icon">🥚</div>
+        <div class="ip-name">Huevo / Maíz</div>
+        <div class="ip-val">6,6</div>
+        <div class="ip-unit">kg maíz por docena (dic-25)</div>
+        <div class="ip-change ok">▼ −25% vs dic-24</div>
+        <div class="ip-interp">Desde el pico de junio-25 (11 kg/docena), la relación mejoró significativamente. Menor costo relativo de alimentación para la industria avícola.</div>
+      </div>
+      <div class="ip-card bad">
+        <div class="ip-icon">🥛</div>
+        <div class="ip-name">Leche / Maíz</div>
+        <div class="ip-val">~2,3</div>
+        <div class="ip-unit">kg maíz por litro al tambo (est.)</div>
+        <div class="ip-change neutral">pendiente OCLA</div>
+        <div class="ip-interp">El precio al tambo ($481/L feb-26, SAGyP-DNL) frente a la pizarra maíz implica una relación históricamente baja. Pendiente serie oficial OCLA/SIGLeA para ER.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gráfico evolución IP -->
+  <div class="g2">
+    <div class="card">
+      <div class="card-ttl">Evolución G2 / Granos — kg grano por litro (diciembre)</div>
+      <div class="ch h220"><canvas id="chartIP"></canvas></div>
+      <div class="fuente">Fuente: Sec. Energía (gasoil Paraná) · BCR/BOLSACER (pizarra granos)</div>
+      <div class="insight red"><strong>Arroz: triplicó en un año.</strong> La combinación precio arroz −50% + gasoil +41% llevó la relación de 1,6 a 3,0 kg/L en solo 12 meses. Esto explica la caída del área sembrada de arroz proyectada para 25/26 (−13%), especialmente en zonas con riego por pozo profundo donde el gasoil es el insumo dominante.</div>
+    </div>
+    <div class="card">
+      <div class="card-ttl">Evolución Carnes / Maíz — 2023–2025 (promedio anual)</div>
+      <div class="ch h220"><canvas id="chartCarnes"></canvas></div>
+      <div class="fuente">Fuente: Rosgan (novillito/ternero) · SIO Carnes (capón) · SAGyP (pollo) · BCR (maíz)</div>
+      <div class="insight blue"><strong>Tendencias divergentes:</strong> Novillito y ternero dispararon su relación con el maíz (retención de vientres + demanda exportadora), mientras pollo y huevo mejoraron (precio del maíz creció menos que las proteínas avícolas). El capón quedó en un punto intermedio.</div>
+    </div>
+  </div>
+</div>
 </section>
 
-<!-- ═══ 04 BOVINOS ════════════════════════════════════════════════════════════ -->
+<!-- 04 BOVINOS -->
 <section id="bovinos">
-  <div class="wrap">
-    <div class="sec-hdr"><span class="sec-num">04</span><div><div class="sec-ttl">Sector Bovino</div><div class="sec-sub">Fuente: FUCOFA · SAGyP · Rosgan · DGEC-ER</div></div></div>
-    <div class="g2">
-      <div>
-        <div class="mrow">
-          <div class="mcard green"><div class="mcard-lbl">Existencias 2025</div><div class="mcard-val">4,4 M</div><div class="mcard-sub">+3% vs 1° camp. 25</div></div>
-          <div class="mcard green"><div class="mcard-lbl">Faena ER 2025</div><div class="mcard-val">517 K</div><div class="mcard-sub">+6% a/a · 4% nac.</div></div>
-        </div>
-        <div class="card" style="margin-bottom:14px">
-          <div class="card-ttl">💼 Exportaciones Carne Bovina ER (ene–oct 2025)</div>
-          <div class="mrow">
-            <div class="mcard green"><div class="mcard-lbl">Valor USD</div><div class="mcard-val">$240 M</div><div class="mcard-sub">+74% interanual</div></div>
-            <div class="mcard"><div class="mcard-lbl">Volumen</div><div class="mcard-val">52.000 t</div><div class="mcard-sub">+12% interanual</div></div>
-          </div>
-          <div class="fuente">Fuente: DGEC Entre Ríos.</div>
-        </div>
-        <div class="card">
-          <div class="card-ttl">Evolución precio Novillito y Ternero (Rosgan · $/kg vivo)</div>
-          <div style="overflow-x:auto">
-            <table class="tbl">
-              <thead><tr><th>Categoría</th><th>2023</th><th>2024</th><th>2025</th><th>Acum.</th></tr></thead>
-              <tbody>
-                <tr><td>🐄 Novillito 1-2 años</td><td>$584</td><td>$1.677</td><td class="big">$3.406</td><td><span class="bdg dn">+483%</span></td></tr>
-                <tr><td>🐄 Ternero/a</td><td>$715</td><td>$2.137</td><td class="big">$3.698</td><td><span class="bdg dn">+417%</span></td></tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="fuente">Fuente: Rosgan — Mercado de Hacienda. Promedio anual.</div>
-          <div class="concl">
-            <strong>Ciclo alcista bovino:</strong> Los precios acumularon más del 400% en tres años, superando la inflación (IPC +460% acum. 2023-2025). La convergencia entre novillito y ternero en 2025 señala una <strong>recomposición del ciclo ganadero</strong> post-liquidación: la vaca ya se retiene, la oferta de faena comienza a ajustarse y los precios responden. La fuerte demanda exportadora (+74% en valor) amplifica este efecto. La relación <strong>novillito/maíz de ~16 kg</strong> es la más alta desde 2022, lo que vuelve al feedlot con restricciones en sus márgenes.
-          </div>
-        </div>
+<div class="wrap">
+  <div class="sec-hdr">
+    <span class="sec-chip">04</span>
+    <div><div class="sec-ttl">Sector Bovino</div><div class="sec-sub">FUCOFA · SAGyP · Rosgan · DGEC-ER</div></div>
+  </div>
+  <div class="g2">
+    <div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+        <div class="metric green" style="flex:1"><div class="metric-lbl">Existencias 2025</div><div class="metric-val">4,4M</div><div class="metric-sub">+3% vs 1° campaña 25</div></div>
+        <div class="metric green" style="flex:1"><div class="metric-lbl">Faena ER 2025</div><div class="metric-val">517K</div><div class="metric-sub">+6% a/a · 4% nacional</div></div>
+        <div class="metric blue" style="flex:1"><div class="metric-lbl">Export. bovina (ene-oct 25)</div><div class="metric-val">USD 240M</div><div class="metric-sub">+74% a/a en valor</div></div>
       </div>
-      <div class="card">
-        <div class="card-ttl">Precio Novillito $/kg vivo — 2023–2025 (Rosgan)</div>
-        <div class="ch-wrap h240"><canvas id="chartBov"></canvas></div>
-        <div class="fuente">Fuente: Rosgan. Novillos 1-2 años, promedio mensual.</div>
-        <div class="concl" style="margin-top:12px">
-          <strong>¿Qué esperar en 2026?</strong> Con el stock ganadero en proceso de recuperación y la retención de vientres en marcha, la oferta de hacienda gorda se mantendría limitada. Combinado con exportaciones en máximos históricos y una demanda china sostenida, los precios tendrían soporte alcista. El riesgo principal es una desaceleración económica interna que reduzca el consumo per cápita —ya en mínimos históricos— y presione a la baja en el mostrador.
-        </div>
+      <div class="card" style="overflow-x:auto">
+        <div class="card-ttl">Precios Novillito y Ternero — Rosgan ($/kg vivo, promedio anual)</div>
+        <table class="tbl">
+          <thead><tr><th>Categoría</th><th>2023</th><th>2024</th><th>2025</th><th>Acum. 23-25</th></tr></thead>
+          <tbody>
+            <tr><td>🐄 Novillito 1-2 años</td><td>$584</td><td>$1.677</td><td class="big">$3.406</td><td><span class="bdg dn">+483%</span></td></tr>
+            <tr><td>🐄 Ternero/a</td><td>$715</td><td>$2.137</td><td class="big">$3.698</td><td><span class="bdg dn">+417%</span></td></tr>
+          </tbody>
+        </table>
+        <div class="fuente">Fuente: Rosgan — Mercado de Hacienda.</div>
+        <div class="insight blue" style="margin-top:10px"><strong>Ciclo alcista bovino en pleno desarrollo.</strong> Los precios superaron la inflación acumulada del período. La convergencia entre novillito y ternero en 2025 señala retención de vientres consolidada. El ternero supera al novillito en precio relativo al maíz (17,4 vs 16,0 kg), indicando escasez de reposición. Las exportaciones (+74% en valor, +12% en volumen) actúan como piso del mercado interno.</div>
       </div>
     </div>
+    <div class="card">
+      <div class="card-ttl">Precio Novillito $/kg vivo — 2023–2025</div>
+      <div class="ch h240"><canvas id="chartBov"></canvas></div>
+      <div class="fuente">Fuente: Rosgan · novillos 1-2 años · promedio mensual.</div>
+    </div>
   </div>
+</div>
 </section>
 
-<!-- ═══ 05 PORCINOS ════════════════════════════════════════════════════════════ -->
+<!-- 05 PORCINOS -->
 <section id="porcinos">
-  <div class="wrap">
-    <div class="sec-hdr"><span class="sec-num">05</span><div><div class="sec-ttl">Sector Porcino</div><div class="sec-sub">Fuente: SAGyP · SIO Carnes</div></div></div>
-    <div class="g2">
-      <div>
-        <div class="mrow">
-          <div class="mcard green"><div class="mcard-lbl">Existencias (mar-25)</div><div class="mcard-val">566.989</div><div class="mcard-sub">+2% vs 2024</div></div>
-          <div class="mcard green"><div class="mcard-lbl">Faena ER 2025</div><div class="mcard-val">412 K</div><div class="mcard-sub">+7% a/a · 5% nac.</div></div>
-        </div>
-        <div class="card" style="overflow-x:auto; margin-bottom:14px">
-          <div class="card-ttl">Precio Capón (SIO Carnes · $/kg vivo · promedio anual)</div>
-          <table class="tbl">
-            <thead><tr><th>Año</th><th>Precio</th><th>Variación</th></tr></thead>
-            <tbody>
-              <tr><td>2023</td><td>$387,97</td><td>—</td></tr>
-              <tr><td>2024</td><td>$1.124,98</td><td><span class="bdg dn">+190%</span></td></tr>
-              <tr><td>2025</td><td class="big">$1.637,03</td><td><span class="bdg dn">+45%</span></td></tr>
-            </tbody>
-          </table>
-          <div class="fuente">Fuente: SIO Carnes · SAGyP. Acumulado 2023-2025: +322%.</div>
-        </div>
-        <div class="card">
-          <div class="card-ttl">Relación Capón / Maíz</div>
-          <div class="mrow">
-            <div class="mcard"><div class="mcard-lbl">2023</div><div class="mcard-val">~3,0 kg</div><div class="mcard-sub">maíz / kg capón</div></div>
-            <div class="mcard"><div class="mcard-lbl">2024</div><div class="mcard-val">~5,5 kg</div></div>
-            <div class="mcard green"><div class="mcard-lbl">Dic-25</div><div class="mcard-val">~7,7 kg</div><div class="mcard-sub">mejora vs ~9 en jul-25</div></div>
-          </div>
-          <div class="concl">
-            <strong>El porcino desplaza al vacuno en el consumo interno.</strong> En 2024, por primera vez en la historia, el consumo de carne porcina superó los 18 kg/hab/año, traccionado por la caída del poder adquisitivo que corrió a los consumidores hacia proteínas más accesibles. <strong>La relación capón/maíz de 7,7</strong> —donde el maíz concentra ~70% del costo de alimentación— sigue siendo desafiante pero muestra mejora desde el pico de mediados de 2025. El DEX 0% permanente para porcinos es un incentivo clave para la expansión exportadora.
-          </div>
-        </div>
+<div class="wrap">
+  <div class="sec-hdr">
+    <span class="sec-chip">05</span>
+    <div><div class="sec-ttl">Sector Porcino</div><div class="sec-sub">SAGyP · SIO Carnes</div></div>
+  </div>
+  <div class="g2">
+    <div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+        <div class="metric green" style="flex:1"><div class="metric-lbl">Existencias (mar-25)</div><div class="metric-val">566.989</div><div class="metric-sub">+2% vs 2024</div></div>
+        <div class="metric green" style="flex:1"><div class="metric-lbl">Faena ER 2025</div><div class="metric-val">412K</div><div class="metric-sub">+7% a/a · 5% nac.</div></div>
       </div>
       <div class="card">
-        <div class="card-ttl">Precio Capón $/kg vivo — 2023–2025</div>
-        <div class="ch-wrap h240"><canvas id="chartCap"></canvas></div>
-        <div class="fuente">Fuente: SIO Carnes · SAGyP.</div>
+        <div class="card-ttl">Precio Capón (SIO Carnes · $/kg vivo · promedio anual)</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px">
+          <div class="metric" style="flex:1"><div class="metric-lbl">2023</div><div class="metric-val">$388</div></div>
+          <div class="metric" style="flex:1"><div class="metric-lbl">2024</div><div class="metric-val">$1.125</div><div class="metric-sub" style="color:var(--red)">+190%</div></div>
+          <div class="metric blue" style="flex:1"><div class="metric-lbl">2025</div><div class="metric-val">$1.637</div><div class="metric-sub">+45%</div></div>
+        </div>
+        <div class="fuente">Fuente: SIO Carnes · SAGyP. Acumulado 2023-2025: +322%.</div>
+        <div class="insight blue"><strong>Porcinos: la proteína del desplazamiento.</strong> En 2024 el consumo superó 18 kg/hab/año (record histórico), traccionado por el deterioro del poder adquisitivo que corrió consumidores desde la carne vacuna. El DEX 0% permanente (D°697/2024) abre la exportación. La relación capón/maíz de 7,7 en dic-25 mejoró desde el pico de ~9 en julio, indicando que el sector recupera ecuación.</div>
       </div>
     </div>
+    <div class="card">
+      <div class="card-ttl">Precio Capón $/kg vivo — 2023–2025</div>
+      <div class="ch h240"><canvas id="chartCap"></canvas></div>
+      <div class="fuente">Fuente: SIO Carnes · SAGyP.</div>
+    </div>
   </div>
+</div>
 </section>
 
-<!-- ═══ 06 AVÍCOLA ════════════════════════════════════════════════════════════ -->
+<!-- 06 AVÍCOLA -->
 <section id="aviar">
-  <div class="wrap">
-    <div class="sec-hdr"><span class="sec-num">06</span><div><div class="sec-ttl">Sector Avícola</div><div class="sec-sub">Entre Ríos concentra el 50% de la faena nacional · Fuente: SAGyP · INDEC · DGEC-ER</div></div></div>
-    <div class="g2">
-      <div>
-        <div class="mrow">
-          <div class="mcard green"><div class="mcard-lbl">Faena ER 2025</div><div class="mcard-val">3,7 M</div><div class="mcard-sub">+1% a/a · 50% nac.</div></div>
-          <div class="mcard red"><div class="mcard-lbl">Precio real pollo</div><div class="mcard-val">−8%</div><div class="mcard-sub">nov-25 vs nov-24 (IPC)</div></div>
-        </div>
-        <div class="g2" style="gap:10px; margin-bottom:14px">
-          <div class="card">
-            <div class="card-ttl">🐔 Rel. Maíz / Pollo (nov-25)</div>
-            <div style="font-family:'DM Serif Display',serif;font-size:32px;color:var(--verde)">8 kg</div>
-            <div style="font-size:12px">por kg de pollo</div>
-            <div class="concl" style="margin-top:8px;font-size:11px"><strong>−30%</strong> vs nov-24 → mejora en rentabilidad avícola</div>
-          </div>
-          <div class="card">
-            <div class="card-ttl">💼 Export. Aviar ER (ene–oct 25)</div>
-            <div style="font-family:'DM Serif Display',serif;font-size:28px">USD 104M</div>
-            <div style="font-size:12px;color:var(--verde2)">+4% en valor · −10% en volumen</div>
-            <div class="fuente">→ subida de precios, no de cantidades.</div>
-          </div>
+<div class="wrap">
+  <div class="sec-hdr">
+    <span class="sec-chip">06</span>
+    <div><div class="sec-ttl">Sector Avícola</div><div class="sec-sub">ER = 50% de la faena avícola nacional · SAGyP · INDEC · DGEC-ER</div></div>
+  </div>
+  <div class="g2">
+    <div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+        <div class="metric green" style="flex:1"><div class="metric-lbl">Faena ER 2025</div><div class="metric-val">3,7M</div><div class="metric-sub">+1% a/a · 50% nac.</div></div>
+        <div class="metric red" style="flex:1"><div class="metric-lbl">Precio real pollo</div><div class="metric-val">−8%</div><div class="metric-sub">nov-25 vs nov-24 (IPC)</div></div>
+        <div class="metric blue" style="flex:1"><div class="metric-lbl">Export. aviar (ene-oct 25)</div><div class="metric-val">USD 104M</div><div class="metric-sub">+4% valor · −10% vol.</div></div>
+      </div>
+      <div class="g2" style="gap:10px;margin-bottom:14px">
+        <div class="card">
+          <div class="card-ttl">🐔 Maíz / Pollo (nov-25)</div>
+          <div style="font-family:'Syne',sans-serif;font-size:40px;font-weight:800;color:var(--blue1)">8 kg</div>
+          <div style="font-size:12px;color:var(--ink3)">por kg de pollo</div>
+          <div class="ip-change ok" style="margin-top:8px;display:inline-flex">▼ −30% vs nov-24</div>
         </div>
         <div class="card">
-          <div class="card-ttl">🥚 Relación Maíz / Huevo (dic-25)</div>
-          <div class="mrow">
-            <div class="mcard green"><div class="mcard-lbl">Dic-25</div><div class="mcard-val">6,6 kg</div><div class="mcard-sub">maíz / docena · −25% a/a</div></div>
-            <div class="mcard red"><div class="mcard-lbl">Pico jun-25</div><div class="mcard-val">11,0 kg</div><div class="mcard-sub">+37% vs jun-24</div></div>
-          </div>
-          <div class="fuente">Fuente: SAGyP · INDEC. Precio huevo deflactado IPC dic-25: $3.986/docena (−4% a/a real).</div>
-          <div class="concl">
-            <strong>Tendencia converge hacia equilibrio.</strong> El ciclo de precios altos del pollo y el huevo de 2024-H1 2025 comenzó a revertirse en la segunda mitad del año. La relación maíz/pollo cayó de 11,4 a 8,0 kg en doce meses, reflejando que el precio del maíz creció menos que el del pollo. Para el integrador avícola, esto implica <strong>mejora en los márgenes de alimentación</strong>. Sin embargo, el precio real del pollo acumula −8% interanual, lo que señala una traslación incompleta de costos al consumidor.
-          </div>
+          <div class="card-ttl">🥚 Maíz / Huevo (dic-25)</div>
+          <div style="font-family:'Syne',sans-serif;font-size:40px;font-weight:800;color:var(--blue1)">6,6 kg</div>
+          <div style="font-size:12px;color:var(--ink3)">por docena</div>
+          <div class="ip-change ok" style="margin-top:8px;display:inline-flex">▼ −25% vs dic-24</div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-ttl">Relación Maíz / Pollo y Maíz / Huevo — 2024–2025</div>
-        <div class="ch-wrap h200"><canvas id="chartAv1"></canvas></div>
-        <div class="ch-wrap h180" style="margin-top:16px"><canvas id="chartAv2"></canvas></div>
-        <div class="fuente">Fuente: SAGyP. Maíz: pizarra disponible BCR.</div>
-      </div>
+      <div class="insight green"><strong>Avícola: el mejor momento del año para el integrador.</strong> Las relaciones maíz/pollo y maíz/huevo mejoraron ~30% en 12 meses, lo que implica menor costo de alimentación relativo. El precio real del pollo eviscerado cayó −8% interanual (deflactado IPC), señal de que los beneficios llegan al consumidor. Sin embargo, el aumento exportador (+4% en valor pero −10% en volumen) indica que la mejora de precio fue por tipo de cambio, no por mayor demanda.</div>
+    </div>
+    <div class="card">
+      <div class="card-ttl">Maíz / Pollo y Maíz / Huevo — 2024–2025</div>
+      <div class="ch h200"><canvas id="chartAv"></canvas></div>
+      <div class="fuente">Fuente: SAGyP · INDEC. Precio huevo real deflactado IPC dic-25: $3.986/docena (−4% a/a).</div>
     </div>
   </div>
+</div>
 </section>
 
-<!-- ═══ 07 LÁCTEO ═════════════════════════════════════════════════════════════ -->
+<!-- 07 LÁCTEO -->
 <section id="lacteo">
-  <div class="wrap">
-    <div class="sec-hdr"><span class="sec-num">07</span><div><div class="sec-ttl">Sector Lácteo</div><div class="sec-sub">Fuente: OCLA · SAGyP-DNL (SIGLeA-LUME) · DGEC-ER</div></div></div>
-    <div class="g2">
-      <div>
-        <div class="card" style="margin-bottom:14px">
-          <div class="card-ttl">Precio al Tambo — Panel SIGLeA Nacional</div>
-          <div class="mrow">
-            <div class="mcard green"><div class="mcard-lbl">Precio nacional feb-26</div><div class="mcard-val">$481/L</div><div class="mcard-sub">US$ 0,411/L (TC mayorista)</div></div>
-            <div class="mcard red"><div class="mcard-lbl">Real vs últimos 5 años</div><div class="mcard-val">Mínimo</div><div class="mcard-sub">de los últimos 7 años en abr-25</div></div>
-          </div>
-          <div class="fuente">Fuente: <a href="https://www.magyp.gob.ar/sitio/areas/ss_lecheria/mercado_futuro/" target="_blank">SAGyP-DNL (SIGLeA-LUME)</a> · OCLA Panel 18 empresas.</div>
-        </div>
-        <div class="card" style="margin-bottom:14px">
-          <div class="card-ttl">Fuentes disponibles para ER</div>
-          <div style="font-size:12.5px;line-height:1.8;color:var(--ink2)">
-            <div>📊 <strong>OCLA</strong> — Panel 18 empresas + SIGLeA <em>por provincia</em> (incluye Entre Ríos) · <a href="https://www.ocla.org.ar/portafolio/16/" target="_blank" style="color:var(--verde2)">ocla.org.ar</a></div>
-            <div>📊 <strong>SAGyP-DNL</strong> — SIGLeA-LUME nacional mensual · Precio publicado día 11 de cada mes</div>
-            <div>📊 <strong>DGEC ER</strong> — Sector lechero provincial, informes periódicos</div>
-          </div>
-        </div>
-        <div style="background:var(--rojo2);border-radius:8px;padding:12px;font-size:12px;color:var(--rojo)">
-          <strong>⚠ Pendiente:</strong> Incorporar la serie mensual SIGLeA-LUME por provincia (Entre Ríos) desde OCLA para calcular la relación Leche/Maíz específica de ER. La serie nacional es un proxy válido pero las cuencas lecheras de ER pueden mostrar diferenciales de hasta 5-8% respecto al promedio nacional.
-        </div>
+<div class="wrap">
+  <div class="sec-hdr">
+    <span class="sec-chip">07</span>
+    <div><div class="sec-ttl">Sector Lácteo</div><div class="sec-sub">OCLA · SAGyP-DNL (SIGLeA-LUME) · DGEC-ER</div></div>
+  </div>
+  <div class="g2">
+    <div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px">
+        <div class="metric blue" style="flex:1"><div class="metric-lbl">Precio tambo feb-26</div><div class="metric-val">$481/L</div><div class="metric-sub">US$ 0,411/L (TC mayor.)</div></div>
+        <div class="metric red" style="flex:1"><div class="metric-lbl">Real vs últimos 5 años</div><div class="metric-val">Mínimo</div><div class="metric-sub">de los últimos 7 años</div></div>
       </div>
       <div class="card">
-        <div class="card-ttl">Precio leche al tambo — estimación Panel 18 nacional (ARS/litro)</div>
-        <div class="ch-wrap h200"><canvas id="chartLec"></canvas></div>
-        <div style="font-size:10.5px;color:var(--rojo);margin-top:6px">⚠ Serie estimada — pendiente reemplazar con OCLA/SIGLeA por provincia ER.</div>
-        <div class="fuente">Fuente estimada: SAGyP/OCLA promedios anuales distribuidos mensualmente.</div>
-        <div class="concl warn" style="margin-top:10px">
-          <strong>Situación del sector:</strong> El precio real al tambo viene cayendo desde los máximos de may-24 y los primeros meses de 2025 registran los valores reales más bajos en 7 años (OCLA). La buena noticia es el DEX 0% para lácteos (D°697/2024), que mejora la ecuación exportadora y podría compensar parcialmente la presión bajista del precio interno. La relación <strong>Leche/Maíz</strong> —pendiente de cálculo con datos oficiales— es el indicador clave para monitorear la rentabilidad del tambo entreriano.
+        <div class="card-ttl">Fuentes disponibles para Entre Ríos</div>
+        <div style="font-size:12.5px;line-height:2;color:var(--ink3)">
+          📊 <strong>OCLA</strong> — Panel 18 empresas + SIGLeA por provincia · <a href="https://www.ocla.org.ar/portafolio/16/" target="_blank" style="color:var(--blue2)">ocla.org.ar</a><br>
+          📊 <strong>SAGyP-DNL</strong> — SIGLeA-LUME nacional, publicación día 11 de cada mes<br>
+          📊 <strong>DGEC ER</strong> — Sector lechero provincial, informes periódicos
+        </div>
+        <div style="background:var(--red2);border-radius:8px;padding:10px;font-size:12px;color:#991b1b;margin-top:10px;border:1px solid #fecaca">
+          ⚠ <strong>Pendiente:</strong> Serie mensual SIGLeA por provincia ER desde OCLA. La serie nacional es proxy válido con diferencial de hasta 8% respecto al precio local.
         </div>
       </div>
+      <div class="insight amber" style="margin-top:10px"><strong>Sector bajo presión.</strong> El precio real al tambo está en mínimos de 7 años (OCLA, abr-25). La buena noticia: DEX 0% lácteos (D°697/2024) mejora la ecuación exportadora. La relación Leche/Maíz (~2,3 kg estimado) es históricamente baja — el maíz está "caro" en términos de leche, lo que comprime los márgenes del tambo.</div>
+    </div>
+    <div class="card">
+      <div class="card-ttl">Precio leche al tambo nacional — estimación ARS/litro</div>
+      <div class="ch h220"><canvas id="chartLec"></canvas></div>
+      <div style="font-size:10.5px;color:var(--red);margin-top:6px">⚠ Estimación — pendiente OCLA/SIGLeA por provincia ER.</div>
+      <div class="fuente">Fuente: SAGyP/OCLA promedios anuales, distribución mensual estimada.</div>
     </div>
   </div>
+</div>
 </section>
 
-<!-- ═══ 08 RETENCIONES ════════════════════════════════════════════════════════ -->
-<section id="retenciones">
-  <div class="wrap">
-    <div class="sec-hdr"><span class="sec-num">08</span><div><div class="sec-ttl">Marco de Derechos de Exportación Vigente</div><div class="sec-sub">Decreto 877/2025 — baja permanente desde diciembre 2025 · Actualizado al 01/04/2026</div></div></div>
-    <div class="card" style="overflow-x:auto; margin-bottom:16px">
-      <table class="tbl">
-        <thead><tr><th>Producto</th><th>DEX vigente</th><th>Norma</th><th>Carácter</th><th>DEX dic-23</th><th>Impacto ER</th></tr></thead>
-        <tbody>
-          <tr><td>🌱 Soja poroto</td><td><strong>24%</strong></td><td>D° 877/2025</td><td>Permanente</td><td>33%</td><td>Alto · principal cultivo</td></tr>
-          <tr><td>🌱 Subproductos soja</td><td><strong>22,5%</strong></td><td>D° 877/2025</td><td>Permanente</td><td>31%</td><td>Alto · molienda</td></tr>
-          <tr><td>🌽 Maíz</td><td><strong>8,5%</strong></td><td>D° 877/2025</td><td>Permanente</td><td>12%</td><td>Alto · 2,25 Mt en 24/25</td></tr>
-          <tr><td>🌾 Trigo</td><td><strong>7,5%</strong></td><td>D° 877/2025</td><td>Permanente</td><td>12%</td><td>Alto · récord 25/26 proyectado</td></tr>
-          <tr><td>🍚 Arroz</td><td style="color:var(--verde2);font-weight:700">0%</td><td>D° 38/2025</td><td>Permanente</td><td>3–6%</td><td style="color:var(--verde2);font-weight:600">✅ Ventaja diferencial ER (32% nac.)</td></tr>
-          <tr><td>🐄 Carne bovina export.</td><td><strong>~5%</strong></td><td>Post D° 685/2025</td><td>Permanente</td><td>5–9%</td><td>Medio</td></tr>
-          <tr><td>🐷 Porcinos</td><td style="color:var(--verde2);font-weight:700">0%</td><td>D° 697/2024</td><td>Permanente</td><td>4–9%</td><td style="color:var(--verde2)">Positivo</td></tr>
-          <tr><td>🥛 Lácteos</td><td style="color:var(--verde2);font-weight:700">0%</td><td>D° 697/2024</td><td>Permanente</td><td>4,5–9%</td><td style="color:var(--verde2)">Positivo · tambo ER relevante</td></tr>
-          <tr><td>🐔 Carne aviar export.</td><td><strong>5%</strong></td><td>Post D° 685/2025</td><td>Permanente</td><td>5%</td><td>Alto · ER 50% faena nac.</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="concl neutral">
-      <strong>Historia de cambios (2023-2026):</strong> Dic-2023: herencia alícuotas altas (soja 33%, maíz 12%) → Ene-2025: baja temporal Decreto 38 (soja 26%, maíz 9,5%) → Jul-2025: soja sube a 33%, trigo prorroga al 9,5% → Sep-2025: ventana cero granos y carnes (D°682/685, cupo USD 7.000M, agotado anticipadamente) → <strong>Dic-2025: Decreto 877 — baja permanente</strong> (soja 24%, maíz 8,5%, trigo 7,5%).<br><br>
-      <strong>Lectura para ER:</strong> La combinación DEX 0% en arroz + porcinos + lácteos configura una <strong>ventaja competitiva estructural</strong> para los tres complejos donde Entre Ríos tiene mayor peso relativo nacional. El DEX 0% permanente en arroz es especialmente relevante: ninguna otra provincia productora de granos goza de un diferencial de retenciones tan favorable respecto a las oleaginosas.
-    </div>
+<!-- 08 DEX -->
+<section id="dex">
+<div class="wrap">
+  <div class="sec-hdr">
+    <span class="sec-chip">08</span>
+    <div><div class="sec-ttl">Derechos de Exportación Vigentes</div><div class="sec-sub">Decreto 877/2025 · Baja permanente desde diciembre 2025 · Actualizado 01/04/2026</div></div>
   </div>
-</section>
-
-<!-- ═══ 09 METODOLOGÍA ════════════════════════════════════════════════════════ -->
-<section id="metod" style="background:var(--gris)">
-  <div class="wrap">
-    <div class="sec-hdr"><span class="sec-num">09</span><div><div class="sec-ttl">Metodología, Fuentes y Automatización</div><div class="sec-sub">Transparencia · Reproducibilidad · Actualización</div></div></div>
-
-    <div class="card" style="overflow-x:auto; margin-bottom:20px">
-      <table class="metod-tbl">
-        <tr><td>FOB granos (SAGyP)</td><td><a href="https://datos.gob.ar/dataset/sspm-precios-fob-oficiales" target="_blank">datos.gob.ar — dataset sspm_358.1</a>. API pública: <code>apis.datos.gob.ar/series/api</code>. Arroz: variedad <strong>Uru5</strong> (marzo), Trigo/Maíz (enero), Soja (mayo). Segundo miércoles hábil. <span style="color:var(--verde2);font-weight:600">✅ Actualizable automáticamente vía API.</span></td></tr>
-        <tr><td>Pizarra granos (BCR/BOLSACER)</td><td>Cámara Arbitral de Cereales BCR. Promedios mensuales: <a href="https://cooperativalehmann.coop/acopio" target="_blank">Coop. Lehmann</a>. Precio sobre puerto Rosario. Para ER descontar flete: Paraná ~USD 22/t · Concordia ~USD 28/t. <span class="pending">Sin API pública — actualización manual mensual.</span></td></tr>
-        <tr><td>Gasoil G2/G3 Paraná</td><td>Secretaría de Energía — Res. 314/2016. Portal: <a href="http://res1104.se.gob.ar/consultaprecios.eess.php" target="_blank">res1104.se.gob.ar</a>. Dataset: <a href="https://datos.gob.ar/dataset/energia-precios-surtidor---resolucion-3142016" target="_blank">datos.gob.ar</a>. <span style="color:var(--trigo);font-weight:600">⚡ Parcialmente automatizable con CKAN API filtrando provincia=Entre Ríos.</span></td></tr>
-        <tr><td>TC BNA (BCRA)</td><td>BCRA — Comunicación B 9791. <a href="https://www.bcra.gob.ar/PublicacionesEstadisticas/Tipos_de_cambios.asp" target="_blank">bcra.gob.ar</a>. <span style="color:var(--verde2);font-weight:600">✅ API pública: api.estadisticasbcra.ar (sin auth).</span></td></tr>
-        <tr><td>Novillito / Ternero</td><td>Rosgan — Mercado de Hacienda. Novillos 1-2 años, promedio anual/mensual. IPCVA para serie histórica. <span class="pending">Sin API — actualización manual mensual.</span></td></tr>
-        <tr><td>Capón Porcino</td><td>SIO Carnes / SAGyP — Dirección de Porcinos. Anuario Porcino. <span class="pending">Sin API — actualización manual anual/trimestral.</span></td></tr>
-        <tr><td>Pollo / Huevo</td><td>SAGyP — Dirección de Aves. Precio deflactado IPC (INDEC). Relación maíz/pollo y maíz/huevo en unidades físicas. <span class="pending">Sin API pública directa.</span></td></tr>
-        <tr><td>Leche al tambo</td><td>OCLA — Panel 18 empresas + SIGLeA por provincia. <a href="https://www.ocla.org.ar/portafolio/16/" target="_blank">ocla.org.ar</a>. SAGyP-DNL publicación día 11 de cada mes. <span class="pending">Sin API — actualización manual mensual.</span></td></tr>
-        <tr><td>Retenciones (DEX)</td><td>Boletín Oficial — decretos vigentes. Actualización puntual ante cambios normativos.</td></tr>
-        <tr><td>Producción / Faena</td><td>SAGyP Estimaciones Agrícolas. BOLSACER-SIBER (SIO Granos). FUCOFA. SENASA. DGEC-ER.</td></tr>
-        <tr><td>Relaciones IP</td><td><strong>Fórmula:</strong> Precio Gasoil (ARS/L) × 1.000 ÷ Precio Pizarra (ARS/t) = <em>kg de grano por litro</em>. Más kg = peor para el productor. Metodología consistente con CONINAGRO Monitor IP y FCECO-UNER/BOLSACER Termómetro ER.</td></tr>
-      </table>
-    </div>
-
-    <!-- AUTOMATION BOX -->
-    <div class="auto-box">
-      <h4>⚡ ¿Cómo automatizar las actualizaciones?</h4>
-      <p style="margin-bottom:14px;color:rgba(255,255,255,.6)">Existen dos niveles de automatización posibles. Te explico cada uno:</p>
-
-      <div style="margin-bottom:16px">
-        <div style="color:#a0c4ff;font-weight:600;margin-bottom:6px">NIVEL 1 — Automatizable 100% (ya mismo, gratis)</div>
-        <div class="step"><span class="ok">✅ FOB SAGyP</span> → <code>apis.datos.gob.ar/series/api</code> — esta página ya intenta fetcharla en tiempo real al cargar. Es una API pública sin autenticación.</div>
-        <div class="step"><span class="ok">✅ TC BNA</span> → <code>api.estadisticasbcra.ar/v1/das/tipo_cambio_bna_vendedor</code> — idem, pública y sin CORS.</div>
-        <div class="step"><span class="ok">✅ Gasoil ER</span> → <code>datos.energia.gob.ar</code> CKAN API con filtro <code>provincia=Entre Ríos</code> — funciona desde el browser.</div>
-      </div>
-
-      <div style="margin-bottom:16px">
-        <div style="color:#a0c4ff;font-weight:600;margin-bottom:6px">NIVEL 2 — Datos manuales vía Google Sheets (recomendado)</div>
-        <div class="step"><span class="warn">📋 Pizarra BCR, Novillito, Capón, Pollo, Leche</span> → Crear una <strong>Google Sheet compartida</strong> y publicarla como CSV. La página la lee en cada carga. Solo hay que abrir la planilla y actualizar los números una vez por mes.</div>
-        <div class="step">URL de lectura (reemplazar con tu sheet ID): <code>https://docs.google.com/spreadsheets/d/SHEET_ID/gviz/tq?tqx=out:csv&sheet=datos</code></div>
-      </div>
-
-      <div style="margin-bottom:16px">
-        <div style="color:#a0c4ff;font-weight:600;margin-bottom:6px">NIVEL 3 — GitHub Actions (totalmente desatendido para los APIs)</div>
-        <div class="step">Crear un repositorio GitHub con este <code>index.html</code> y un archivo <code>data/auto.json</code>.</div>
-        <div class="step">El workflow <code>.github/workflows/update.yml</code> corre cada lunes 8 AM Argentina: fetcha FOB, TC y gasoil de los APIs, actualiza <code>auto.json</code> y hace commit.</div>
-        <div class="step">Netlify detecta el push automáticamente y redespliega el sitio. <span class="ok">El proceso es 100% desatendido para los 3 APIs públicos.</span></div>
-        <div class="step">Para los datos manuales (pizarra, carnes, leche): editar la Google Sheet una vez al mes. La página la lee automáticamente.</div>
-      </div>
-
-      <div>
-        <div style="color:#a0c4ff;font-weight:600;margin-bottom:6px">Stack tecnológico sugerido (todo gratuito)</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
-          <div class="step"><span class="ok">Hosting:</span> Netlify (plan free — 300 build min/mes)</div>
-          <div class="step"><span class="ok">Repo:</span> GitHub (plan free)</div>
-          <div class="step"><span class="ok">Automatización:</span> GitHub Actions (2.000 min/mes gratis)</div>
-          <div class="step"><span class="ok">CMS datos manuales:</span> Google Sheets (gratuito)</div>
-        </div>
-      </div>
-    </div>
+  <div class="ret-grid">
+    <div class="ret-card zero"><div class="ret-prod">🍚 Arroz</div><div class="ret-pct">0%</div><div class="ret-norm">D°38/2025 · Permanente · Antes: 3–6%</div><div class="ret-bar"><div class="ret-bar-fill" style="width:0%"></div></div></div>
+    <div class="ret-card zero"><div class="ret-prod">🐷 Porcinos</div><div class="ret-pct">0%</div><div class="ret-norm">D°697/2024 · Permanente · Antes: 4–9%</div><div class="ret-bar"><div class="ret-bar-fill" style="width:0%"></div></div></div>
+    <div class="ret-card zero"><div class="ret-prod">🥛 Lácteos</div><div class="ret-pct">0%</div><div class="ret-norm">D°697/2024 · Permanente · Antes: 4,5–9%</div><div class="ret-bar"><div class="ret-bar-fill" style="width:0%"></div></div></div>
+    <div class="ret-card low"><div class="ret-prod">🌾 Trigo</div><div class="ret-pct">7,5%</div><div class="ret-norm">D°877/2025 · Permanente · Antes: 12%</div><div class="ret-bar"><div class="ret-bar-fill" style="width:31%"></div></div></div>
+    <div class="ret-card low"><div class="ret-prod">🌽 Maíz</div><div class="ret-pct">8,5%</div><div class="ret-norm">D°877/2025 · Permanente · Antes: 12%</div><div class="ret-bar"><div class="ret-bar-fill" style="width:35%"></div></div></div>
+    <div class="ret-card low"><div class="ret-prod">🐄 Carne bovina</div><div class="ret-pct">~5%</div><div class="ret-norm">Post D°685/2025 · Antes: 5–9%</div><div class="ret-bar"><div class="ret-bar-fill" style="width:21%"></div></div></div>
+    <div class="ret-card low"><div class="ret-prod">🐔 Carne aviar</div><div class="ret-pct">5%</div><div class="ret-norm">Post D°685/2025 · Sin cambio</div><div class="ret-bar"><div class="ret-bar-fill" style="width:21%"></div></div></div>
+    <div class="ret-card mid"><div class="ret-prod">🌱 Sub. Soja</div><div class="ret-pct">22,5%</div><div class="ret-norm">D°877/2025 · Permanente · Antes: 31%</div><div class="ret-bar"><div class="ret-bar-fill" style="width:68%"></div></div></div>
+    <div class="ret-card high"><div class="ret-prod">🌱 Soja poroto</div><div class="ret-pct">24%</div><div class="ret-norm">D°877/2025 · Permanente · Antes: 33%</div><div class="ret-bar"><div class="ret-bar-fill" style="width:73%"></div></div></div>
   </div>
+  <div class="insight blue" style="margin-top:16px"><strong>Ventaja estructural de Entre Ríos:</strong> La combinación DEX 0% en arroz + porcinos + lácteos es única en el mapa agropecuario nacional. ER concentra el 32% del arroz, el 5% de la faena porcina y un tambo relevante — los tres rubros exentos de retenciones. Ninguna otra provincia con vocación agrícola tiene un diferencial fiscal tan favorable en sus actividades de mayor peso relativo.</div>
+</div>
 </section>
 
-<!-- FOOTER -->
+<!-- 09 METODOLOGÍA -->
+<section id="metod">
+<div class="wrap">
+  <div class="sec-hdr">
+    <span class="sec-chip">09</span>
+    <div><div class="sec-ttl">Metodología y Fuentes</div><div class="sec-sub">Transparencia · Reproducibilidad · Actualización</div></div>
+  </div>
+  <div class="card" style="overflow-x:auto">
+    <table class="tbl" style="font-size:12px">
+      <thead><tr><th style="width:180px">Variable</th><th>Fuente oficial</th><th>Metodología</th><th>Estado</th></tr></thead>
+      <tbody>
+        <tr><td><strong>FOB granos</strong></td><td><a href="https://datos.gob.ar/dataset/sspm-precios-fob-oficiales" target="_blank" style="color:var(--blue2)">datos.gob.ar — sspm_358.1</a> · SAGyP</td><td>Arroz: var. <strong>Uru5</strong> (mar). Trigo/Maíz: enero. Soja: mayo. Segundo miércoles hábil.</td><td style="color:#065f46;font-weight:600">✅ API automática</td></tr>
+        <tr><td><strong>Pizarra BCR</strong></td><td><a href="https://cooperativalehmann.coop/acopio" target="_blank" style="color:var(--blue2)">Coop. Lehmann</a> · CAC-BCR</td><td>Promedios mensuales sobre puerto Rosario. Flete ER: ~USD 22/t (Paraná), ~USD 28/t (Concordia).</td><td style="color:#92400e;font-weight:600">📋 Manual mensual</td></tr>
+        <tr><td><strong>Gasoil G2/G3 Paraná</strong></td><td><a href="http://res1104.se.gob.ar/consultaprecios.eess.php" target="_blank" style="color:var(--blue2)">res1104.se.gob.ar</a> · Sec. Energía</td><td>Precio por surtidor declarado bajo Res. 314/2016, filtrado por provincia Entre Ríos.</td><td style="color:#92400e;font-weight:600">⚠ Pendiente serie ER</td></tr>
+        <tr><td><strong>TC BNA</strong></td><td><a href="https://api.estadisticasbcra.ar" target="_blank" style="color:var(--blue2)">api.estadisticasbcra.ar</a> · BCRA</td><td>TC vendedor minorista BNA (Com. B9791). API pública sin auth.</td><td style="color:#065f46;font-weight:600">✅ API automática</td></tr>
+        <tr><td><strong>Novillito / Ternero</strong></td><td>Rosgan — Mercado de Hacienda · IPCVA</td><td>Novillos 1-2 años, promedio mensual. Refleja el precio recibido en el mercado de hacienda.</td><td style="color:#92400e;font-weight:600">📋 Manual mensual</td></tr>
+        <tr><td><strong>Capón Porcino</strong></td><td>SIO Carnes · SAGyP Dirección Porcinos</td><td>Precio vivo. Anuario Porcino para serie histórica.</td><td style="color:#92400e;font-weight:600">📋 Manual mensual</td></tr>
+        <tr><td><strong>Pollo / Huevo</strong></td><td>SAGyP Dirección de Aves · INDEC IPC</td><td>Precio pollo eviscerado deflactado IPC. Relaciones maíz/pollo y maíz/docena en unidades físicas.</td><td style="color:#92400e;font-weight:600">📋 Manual mensual</td></tr>
+        <tr><td><strong>Leche al tambo</strong></td><td><a href="https://www.ocla.org.ar/portafolio/16/" target="_blank" style="color:var(--blue2)">OCLA</a> · SAGyP-DNL SIGLeA-LUME</td><td>Panel 18 empresas + SIGLeA por provincia ER. Publicación día 11 de cada mes.</td><td style="color:#991b1b;font-weight:600">⚠ Serie ER pendiente</td></tr>
+        <tr><td><strong>Relaciones IP</strong></td><td>Elaboración propia</td><td><strong>Gasoil/Grano:</strong> Gasoil (ARS/L) × 1.000 ÷ Pizarra (ARS/t) = kg grano/litro. <strong>Producto/Maíz:</strong> Precio producto (ARS/kg) × 1.000 ÷ Pizarra maíz (ARS/t) = kg maíz/kg producto.</td><td>Consistente con CONINAGRO y FCECO-UNER/BOLSACER</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</section>
+
 <footer>
-  <strong>Monitor Agropecuario · Entre Ríos</strong> · Datos de cierre: primer viernes hábil de cada mes ·
-  SAGyP · BOLSACER · DGEC-ER · OCLA · SIO Carnes · Rosgan · Sec. Energía · BCRA
-  <br style="margin:4px 0">
-  <span id="last-update"></span>
+  <strong>Monitor Agropecuario · Entre Ríos</strong> · Datos de cierre: primer viernes hábil de cada mes<br>
+  SAGyP · BOLSACER · DGEC-ER · OCLA · SIO Carnes · Rosgan · Secretaría de Energía · BCRA · Rosgan<br>
+  <span id="ts" style="opacity:.4"></span>
 </footer>
 
 <script>
-// ════════════════════════════════════════════════════════════════════════════
-//  DATOS BASE (fallback si las APIs no responden)
-// ════════════════════════════════════════════════════════════════════════════
-const ANOS = [2018,2019,2020,2021,2022,2023,2024,2025];
+const ANOS=[2018,2019,2020,2021,2022,2023,2024,2025];
+const M12=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const C={blue:'#2563eb',cyan:'#06b6d4',soja:'#16a34a',maiz:'#d97706',trigo:'#0284c7',arroz:'#92400e',bov:'#dc2626',cap:'#7c3aed',lec:'#0891b2'};
 
-const DATA = {
-  fobSoja:  [317,322,368,495,578,458,375,323],
-  fobMaiz:  [154,148,163,268,315,215,185,185],
-  fobTrigo: [208,192,213,280,385,245,215,218],
-  fobArroz: [268,282,230,390,420,610,470,420],
-
-  ipGasoilSoja:  [null,null,1.5,1.9,1.5,1.9,2.7,3.2],
-  ipGasoilMaiz:  [null,null,2.8,3.0,3.8,4.2,5.8,5.6],
-  ipGasoilTrigo: [null,null,2.5,2.8,3.2,4.0,4.9,5.3],
-  ipGasoilArroz: [null,null,2.8,2.0,2.1,1.0,1.6,3.0],
-
-  novillito: [336,358,380,402,424,455,494,532,572,615,680,993,
-              1950,1960,1920,1880,1860,1840,1820,1840,1900,1965,2125,2357,
-              2476,2792,2951,3016,3100,3180,3260,3330,3400,3406,3406,3406],
-  capon: [280,310,350,390,550,750,950,1100,1200,1350,1560,1637],
-
-  maizPollo:[11.4,11.0,10.5,10.0,10.2,11.4,9.5,9.0,8.5,8.2,8.1,8.0],
-  maizHuevo:[8.0,8.5,9.2,10.5,11.0,8.8,8.5,9.0,10.0,11.0,8.0,6.6],
-
-  leche:[20,25,30,40,55,85,135,265,640,750,840,900],
+const DEF={
+  plugins:{legend:{labels:{font:{family:'Inter',size:11},boxWidth:11,padding:10}}},
+  scales:{x:{grid:{display:false},ticks:{font:{family:'Inter',size:11}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'Inter',size:11}}}},
+  responsive:true,maintainAspectRatio:false,animation:{duration:500}
 };
 
-const MESES12 = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-
-// ── Colores ──────────────────────────────────────────────────────────────────
-const C = {
-  soja: '#2d6a4f', maiz: '#c9a84c', trigo: '#5a7fa0',
-  arroz:'#8B5E3C', bov: '#b5302a', cap: '#7c3d9c',
-  lec: '#2563eb', g2: '#e05d44'
-};
-
-// ── Defaults Chart.js ────────────────────────────────────────────────────────
-const DEF = {
-  plugins:{
-    legend:{ labels:{ font:{family:"'DM Sans',sans-serif",size:11}, boxWidth:11, padding:10 } },
-    tooltip:{ titleFont:{family:"'DM Serif Display',serif"}, bodyFont:{family:"'DM Sans',sans-serif",size:11} }
-  },
-  scales:{
-    x:{ grid:{display:false}, ticks:{font:{family:"'DM Sans',sans-serif",size:11}} },
-    y:{ grid:{color:'rgba(0,0,0,.05)'}, ticks:{font:{family:"'DM Sans',sans-serif",size:11}} }
-  },
-  responsive:true, maintainAspectRatio:false,
-  animation:{duration:600}
-};
-
-function line(id, labels, datasets, yLabel='', extra={}) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  new Chart(el, {
-    type:'line',
-    data:{ labels, datasets: datasets.map(d => ({tension:.3,pointRadius:3,borderWidth:2,fill:false,...d})) },
-    options:{...DEF, scales:{...DEF.scales, y:{...DEF.scales.y, title:{display:!!yLabel,text:yLabel,font:{size:10}}}}, ...extra}
-  });
+function line(id,labels,datasets,yLabel=''){
+  const el=document.getElementById(id);if(!el)return;
+  new Chart(el,{type:'line',data:{labels,datasets:datasets.map(d=>({tension:.35,pointRadius:3,borderWidth:2,fill:false,...d}))},
+    options:{...DEF,scales:{...DEF.scales,y:{...DEF.scales.y,title:{display:!!yLabel,text:yLabel,font:{size:10}}}}}});
 }
-function bar(id, labels, datasets, yLabel='') {
-  const el = document.getElementById(id);
-  if (!el) return;
-  new Chart(el, {
-    type:'bar',
-    data:{ labels, datasets },
-    options:{...DEF, scales:{...DEF.scales, y:{...DEF.scales.y, title:{display:!!yLabel,text:yLabel,font:{size:10}}}}}
-  });
+function bar(id,labels,datasets,yLabel=''){
+  const el=document.getElementById(id);if(!el)return;
+  new Chart(el,{type:'bar',data:{labels,datasets},
+    options:{...DEF,scales:{...DEF.scales,y:{...DEF.scales.y,title:{display:!!yLabel,text:yLabel,font:{size:10}}}}}});
 }
-function doughnut(id, data, labels) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  new Chart(el, {
-    type:'doughnut',
-    data:{ labels, datasets:[{ data, backgroundColor:['#2d6a4f','#52b788','#c9a84c','#6a9ab0','#b5302a','#a8d8a8'], borderWidth:2, borderColor:'#fdfcf8' }] },
-    options:{ plugins:{legend:{position:'right',labels:{font:{size:10,family:"'DM Sans',sans-serif"},boxWidth:9,padding:5}}}, cutout:'60%', responsive:true, maintainAspectRatio:false }
-  });
+function doughnut(id,data,labels){
+  const el=document.getElementById(id);if(!el)return;
+  new Chart(el,{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:['#2563eb','#0284c7','#06b6d4','#0d9488','#16a34a'],borderWidth:2,borderColor:'#fff'}]},
+    options:{plugins:{legend:{position:'right',labels:{font:{size:10,family:'Inter'},boxWidth:9,padding:5}}},cutout:'62%',responsive:true,maintainAspectRatio:false}});
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-//  API FETCH — APIs que funcionan desde el browser
-// ════════════════════════════════════════════════════════════════════════════
-
-// Intentar cargar FOB desde datos.gob.ar
-async function fetchFOB() {
-  const badge = document.getElementById('fob-api-badge');
-  const statusBar = document.getElementById('api-status');
-  const dot = document.createElement('span');
-  dot.className = 'api-dot loading';
-
-  try {
-    const url = 'https://apis.datos.gob.ar/series/api/series/'
-      + '?ids=358.1_HABAS_SOJAADO__52,358.1_MAIZ_DEMASADO__52,358.1_TRIGO_GRANADO__41'
-      + '&collapse=year&collapse_aggregation=avg&limit=8&sort=asc&format=json';
-    const r = await fetch(url, {signal: AbortSignal.timeout(6000)});
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const d = await r.json();
-    const rows = d.data.slice(1); // skip header
-    if (rows && rows.length > 0) {
-      const anos  = rows.map(r => parseInt(r[0]));
-      const sojas = rows.map(r => r[1] ? Math.round(r[1]) : null);
-      const maizs = rows.map(r => r[2] ? Math.round(r[2]) : null);
-      const trigs = rows.map(r => r[3] ? Math.round(r[3]) : null);
-      // Update chart data
-      fobChart.data.labels = anos;
-      fobChart.data.datasets[0].data = sojas;
-      fobChart.data.datasets[1].data = maizs;
-      fobChart.data.datasets[2].data = trigs;
-      fobChart.update();
-      // Update KPI
-      const lastSoja = sojas.filter(Boolean).pop();
-      if (lastSoja) {
-        document.getElementById('kpi-fob-soja').textContent = 'USD ' + lastSoja + '/t';
-        document.getElementById('kpi-fob-fecha').textContent = '(actualizado)';
-      }
-      const lastDate = rows[rows.length-1]?.[0];
-      if (badge) badge.innerHTML = '✅ datos en tiempo real: apis.datos.gob.ar';
-      if (badge) badge.style.color = 'var(--verde2)';
-      statusBar.innerHTML = `<span class="api-dot"></span> FOB SAGyP actualizado · ${new Date().toLocaleString('es-AR', {dateStyle:'short',timeStyle:'short'})}`;
-      document.getElementById('fob-update-note').textContent = `Última actualización API: ${new Date().toLocaleDateString('es-AR')}`;
-      return {anos, sojas, maizs, trigs};
-    }
-  } catch (e) {
-    if (badge) { badge.textContent = '(datos base 2025)'; badge.style.color = 'var(--ink4)'; }
-    statusBar.innerHTML = `<span class="api-dot error"></span> API no disponible — mostrando datos base`;
-  }
-  return null;
-}
-
-// ════════════════════════════════════════════════════════════════════════════
-//  CHARTS
-// ════════════════════════════════════════════════════════════════════════════
-
-// FOB (se crea primero para poder actualizarlo después)
-let fobChart;
-(function() {
-  const el = document.getElementById('chartFOB');
-  if (!el) return;
-  fobChart = new Chart(el, {
-    type:'line',
-    data:{
-      labels: ANOS,
-      datasets:[
-        {label:'Soja (mayo)',  data:DATA.fobSoja,  borderColor:C.soja,  tension:.3,pointRadius:4,borderWidth:2,fill:false},
-        {label:'Maíz (enero)', data:DATA.fobMaiz,  borderColor:C.maiz,  tension:.3,pointRadius:4,borderWidth:2,fill:false},
-        {label:'Trigo (enero)',data:DATA.fobTrigo, borderColor:C.trigo, tension:.3,pointRadius:4,borderWidth:2,fill:false},
-        {label:'Arroz Uru5 (marzo)',data:DATA.fobArroz,borderColor:C.arroz,tension:.3,pointRadius:4,borderWidth:2,fill:false,borderDash:[5,3]},
-      ]
-    },
-    options:{
-      ...DEF,
-      plugins:{...DEF.plugins, tooltip:{callbacks:{label:c=>`${c.dataset.label}: USD ${c.raw}/t`}}},
-      scales:{...DEF.scales, y:{...DEF.scales.y, title:{display:true,text:'USD / tonelada',font:{size:10}}}}
-    }
-  });
+// FOB
+let fobCh;
+(function(){
+  const el=document.getElementById('chartFOB');if(!el)return;
+  fobCh=new Chart(el,{type:'line',data:{labels:ANOS,datasets:[
+    {label:'Soja',data:[317,322,368,495,578,458,375,323],borderColor:C.soja,tension:.35,pointRadius:3,borderWidth:2,fill:false},
+    {label:'Maíz',data:[154,148,163,268,315,215,185,185],borderColor:C.maiz,tension:.35,pointRadius:3,borderWidth:2,fill:false},
+    {label:'Trigo',data:[208,192,213,280,385,245,215,218],borderColor:C.trigo,tension:.35,pointRadius:3,borderWidth:2,fill:false},
+    {label:'Arroz Uru5',data:[268,282,230,390,420,610,470,420],borderColor:C.arroz,tension:.35,pointRadius:3,borderWidth:2,fill:false,borderDash:[5,3]},
+  ]},options:{...DEF,plugins:{...DEF.plugins,tooltip:{callbacks:{label:c=>`${c.dataset.label}: USD ${c.raw}/t`}}},
+    scales:{...DEF.scales,y:{...DEF.scales.y,title:{display:true,text:'USD / tonelada',font:{size:10}}}}}});
 })();
 
-// Disparar fetch API
+// API FOB
+async function fetchFOB(){
+  try{
+    const url='https://apis.datos.gob.ar/series/api/series/?ids=358.1_HABAS_SOJAADO__52,358.1_MAIZ_DEMASADO__52,358.1_TRIGO_GRANADO__41&collapse=year&collapse_aggregation=avg&limit=8&sort=asc&format=json';
+    const r=await fetch(url,{signal:AbortSignal.timeout(6000)});
+    if(!r.ok)throw new Error();
+    const d=await r.json();
+    const rows=d.data.slice(1);
+    if(rows.length&&fobCh){
+      fobCh.data.labels=rows.map(r=>parseInt(r[0]));
+      fobCh.data.datasets[0].data=rows.map(r=>r[1]?Math.round(r[1]):null);
+      fobCh.data.datasets[1].data=rows.map(r=>r[2]?Math.round(r[2]):null);
+      fobCh.data.datasets[2].data=rows.map(r=>r[3]?Math.round(r[3]):null);
+      fobCh.update();
+      const s=document.getElementById('fob-status');if(s){s.textContent='✅ datos en tiempo real';s.style.color='#16a34a';}
+      const lastSoja=rows.map(r=>r[1]).filter(Boolean).pop();
+      if(lastSoja){const k=document.getElementById('kpi-soja');if(k)k.textContent='USD '+Math.round(lastSoja)+'/t';}
+      const fd=document.getElementById('fob-date');if(fd)fd.textContent='API actualizada '+new Date().toLocaleDateString('es-AR');
+    }
+  }catch(e){console.log('FOB API no disponible — usando datos base');}
+}
 fetchFOB();
 
-// Costos (doughnut)
+// Costos
 doughnut('cTrigo',[44,12,18,15,11],['Insumos','Labores','Flete','Arrendamiento','Otros']);
-doughnut('cMaiz', [35,43,8,9,5],  ['Insumos','Labores','Flete','Arrendamiento','Otros']);
-doughnut('cSoja', [35,12,22,20,11],['Insumos','Labores','Flete','Arrendamiento','Otros']);
+doughnut('cMaiz',[35,43,8,9,5],['Insumos','Labores','Flete','Arrendamiento','Otros']);
+doughnut('cSoja',[35,12,22,20,11],['Insumos','Labores','Flete','Arrendamiento','Otros']);
 
-// IP gasoil/granos (agrupado por diciembre)
-bar('chartIP',
-  ['Dic-22','Dic-23','Dic-24','Dic-25'],
-  [
-    {label:'G2/Soja',  data:[1.5,1.9,2.7,3.2], backgroundColor:'rgba(45,106,79,.8)'},
-    {label:'G2/Maíz',  data:[3.8,4.2,5.8,5.6], backgroundColor:'rgba(201,168,76,.8)'},
-    {label:'G2/Trigo', data:[3.2,4.0,4.9,5.3], backgroundColor:'rgba(90,127,160,.8)'},
-    {label:'G2/Arroz', data:[2.1,1.0,1.6,3.0], backgroundColor:'rgba(139,94,60,.8)'},
-  ],
-  'kg de grano por litro G2'
-);
+// IP Gasoil barras
+bar('chartIP',['Dic-22','Dic-23','Dic-24','Dic-25'],[
+  {label:'G2/Soja', data:[1.5,1.9,2.7,3.2],backgroundColor:'rgba(37,99,235,.75)',borderRadius:4},
+  {label:'G2/Maíz', data:[3.8,4.2,5.8,5.6],backgroundColor:'rgba(217,119,6,.75)',borderRadius:4},
+  {label:'G2/Trigo',data:[3.2,4.0,4.9,5.3],backgroundColor:'rgba(2,132,199,.75)',borderRadius:4},
+  {label:'G2/Arroz',data:[2.1,1.0,1.6,3.0],backgroundColor:'rgba(146,64,14,.75)',borderRadius:4},
+],'kg grano por litro G2');
+
+// Carnes/Maíz
+bar('chartCarnes',['2023','2024','2025'],[
+  {label:'Novillito/Maíz',data:[4.5,8.5,16.0],backgroundColor:'rgba(220,38,38,.75)',borderRadius:4},
+  {label:'Ternero/Maíz',  data:[5.5,10.5,17.4],backgroundColor:'rgba(185,28,28,.5)',borderRadius:4},
+  {label:'Capón/Maíz',   data:[3.0,5.5,7.7],backgroundColor:'rgba(124,58,237,.75)',borderRadius:4},
+  {label:'Pollo/Maíz',   data:[null,11.4,8.0],backgroundColor:'rgba(37,99,235,.75)',borderRadius:4},
+],'kg maíz por kg producto');
 
 // Novillito
-const labBov = [];
-const valBov = [];
-['2023','2024','2025'].forEach((yr,yi) => {
-  MESES12.forEach((m,mi) => { labBov.push(m+'-'+yr.slice(2)); valBov.push(DATA.novillito[yi*12+mi]||null); });
+const lbov=[],vbov=[],vtner=[];
+['2023','2024','2025'].forEach((y,yi)=>{
+  M12.forEach((m,mi)=>{
+    lbov.push(m+'-'+y.slice(2));
+    const novData=[[336,358,380,402,424,455,494,532,572,615,680,993],[1950,1960,1920,1880,1860,1840,1820,1840,1900,1965,2125,2357],[2476,2792,2951,3016,3100,3180,3260,3330,3400,3406,3406,3406]];
+    const terData=[[380,420,460,500,540,580,640,710,780,850,950,1200],[2050,2050,2020,1980,1960,1940,1920,1940,2000,2100,2280,2500],[2700,2950,3100,3200,3350,3450,3550,3620,3680,3698,3698,3698]];
+    vbov.push(novData[yi][mi]);vtner.push(terData[yi][mi]);
+  });
 });
-line('chartBov', labBov,
-  [{label:'Novillito $/kg',data:valBov,borderColor:C.bov,fill:true,backgroundColor:'rgba(181,48,42,.06)',pointRadius:1.5,borderWidth:1.5}],
-  'ARS / kg vivo'
-);
+line('chartBov',lbov,[
+  {label:'Novillito',data:vbov,borderColor:C.bov,fill:true,backgroundColor:'rgba(220,38,38,.05)',pointRadius:1.5,borderWidth:2},
+  {label:'Ternero',data:vtner,borderColor:'#b91c1c',fill:false,pointRadius:1.5,borderWidth:1.5,borderDash:[4,3]},
+],'ARS/kg vivo');
 
-// Capón (trimestral aprox)
-line('chartCap',
-  ['2023 Q1','Q2','Q3','Q4','2024 Q1','Q2','Q3','Q4','2025 Q1','Q2','Q3','Q4'],
-  [{label:'Capón $/kg',data:DATA.capon,borderColor:C.cap,fill:true,backgroundColor:'rgba(124,61,156,.07)',pointRadius:3,borderWidth:2}],
-  'ARS / kg vivo'
-);
+// Capón
+line('chartCap',['23Q1','Q2','Q3','Q4','24Q1','Q2','Q3','Q4','25Q1','Q2','Q3','Q4'],[
+  {label:'Capón $/kg',data:[280,310,350,390,550,750,950,1100,1400,1550,1650,1637],borderColor:'#7c3aed',fill:true,backgroundColor:'rgba(124,58,237,.06)',pointRadius:3,borderWidth:2}
+],'ARS/kg vivo');
 
 // Avícola
-const labAv = MESES12.map((m,i) => m+(i<12?'-24':'-25'));
-const labAv2 = MESES12.map((m,i) => m+(i<12?'-24':'-25'));
-line('chartAv1',labAv,
-  [{label:'kg maíz / kg pollo',data:DATA.maizPollo,borderColor:C.soja,fill:true,backgroundColor:'rgba(45,106,79,.07)',pointRadius:3,borderWidth:2}],
-  'kg maíz / kg pollo'
-);
-line('chartAv2',labAv2,
-  [{label:'kg maíz / docena huevos',data:DATA.maizHuevo,borderColor:C.trigo,fill:true,backgroundColor:'rgba(90,127,160,.07)',pointRadius:3,borderWidth:2}],
-  'kg maíz / docena'
-);
+const lav=M12.map((m,i)=>m+(i<12?'-24':'-25'));
+line('chartAv',lav,[
+  {label:'Maíz/Pollo (kg/kg)',data:[11.4,11.0,10.5,10.0,10.2,11.4,9.5,9.0,8.5,8.2,8.1,8.0],borderColor:C.blue,fill:false,borderWidth:2,pointRadius:3},
+  {label:'Maíz/Huevo (kg/doc)',data:[8.0,8.5,9.2,10.5,11.0,8.8,8.5,9.0,10.0,11.0,8.0,6.6],borderColor:C.cyan,fill:false,borderWidth:2,pointRadius:3},
+],'kg maíz por unidad');
 
 // Leche
-const labLec = ['Ene-20','Jul-20','Ene-21','Jul-21','Ene-22','Jul-22','Ene-23','Jul-23','Ene-24','Jul-24','Ene-25','Jul-25'];
-line('chartLec',labLec,
-  [{label:'Leche $/L (estimado)',data:DATA.leche,borderColor:C.lec,fill:true,backgroundColor:'rgba(37,99,235,.06)',pointRadius:3,borderWidth:2,borderDash:[5,3]}],
-  'ARS / litro'
-);
+const llec=['Ene-20','Jul-20','Ene-21','Jul-21','Ene-22','Jul-22','Ene-23','Jul-23','Ene-24','Jul-24','Ene-25','Jul-25'];
+line('chartLec',llec,[
+  {label:'Leche $/L (est.)',data:[20,25,30,40,55,85,135,265,640,750,840,900],borderColor:C.lec,fill:true,backgroundColor:'rgba(8,145,178,.05)',borderWidth:2,pointRadius:3,borderDash:[5,3]},
+],'ARS/litro (estimado)');
+
+// Toggle G2/G3
+function showG(g,btn){
+  document.getElementById('panel-g2').style.display=g==='g2'?'':'none';
+  document.getElementById('panel-g3').style.display=g==='g3'?'':'none';
+  document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
 
 // Footer timestamp
-document.getElementById('last-update').textContent =
-  'Página generada: ' + new Date().toLocaleString('es-AR', {dateStyle:'long', timeStyle:'short'});
+document.getElementById('ts').textContent='Generado: '+new Date().toLocaleString('es-AR',{dateStyle:'long',timeStyle:'short'});
 </script>
 </body>
 </html>
